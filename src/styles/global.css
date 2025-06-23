@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+body {
+  --fg: black;
+  --bg: white;
+  color: var(--fg);
+  background-color: var(--bg);
+  transition: background 0.3s, color 0.3s;
+}
+
+body:has(#dark:checked) {
+  --fg: white;
+  --bg: black;
+}
+
+/* Optional: Add prefers-color-scheme support for initial theme */
+@media (prefers-color-scheme: dark) {
+  body {
+    --fg: white;
+    --bg: black;
+  }
+}

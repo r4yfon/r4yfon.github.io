@@ -1,7 +1,0 @@
-baseURL = 'https://github.io/r4yfon/r4yfon.github.io/'
-languageCode = 'en-uk'
-title = 'Home | Ray Fon'
-theme = "ananke"
-[cache]
-  [caches.images]
-    dir = ":cacheDir/images"
