@@ -1,0 +1,126 @@
+<button
+  class="simple-dark-toggle px-2 py-1 flex gap-x-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600"
+  aria-label="Toggle dark mode"
+  type="button">
+  <span class="sun-icon hidden">
+    <!-- Lucide Sun SVG -->
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="lucide lucide-sun-icon lucide-sun"
+      ><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path
+        d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path
+        d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path
+        d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path
+        d="m19.07 4.93-1.41 1.41"></path>
+      <title>Toggle dark mode</title>
+    </svg>
+  </span>
+  <span class="moon-icon hidden">
+    <!-- Lucide Moon SVG -->
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="lucide lucide-moon-icon lucide-moon"
+      ><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+      <title>Toggle dark mode</title>
+    </svg>
+  </span>
+  <span class="system-icon">
+    <!-- Lucide Monitor/System SVG -->
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="lucide lucide-monitor-icon">
+      <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+      <line x1="8" y1="21" x2="16" y2="21"></line>
+      <line x1="12" y1="17" x2="12" y2="21"></line>
+      <title>Follow system theme</title>
+    </svg>
+  </span>
+</button>
+
+<script>
+  const sunIcon = document.getElementsByClassName("sun-icon");
+  const moonIcon = document.getElementsByClassName("moon-icon");
+  const systemIcon = document.getElementsByClassName("system-icon");
+
+  // Get theme from localStorage, default to "system"
+  let theme: string | null = localStorage.getItem("theme");
+  if (theme === null) theme = "system";
+
+  function applyTheme(theme: string) {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else if (theme === "light") {
+      document.documentElement.classList.remove("dark");
+    } else if (theme === "system") {
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)",
+      ).matches;
+      document.documentElement.classList.toggle("dark", prefersDark);
+    }
+  }
+
+  function setThemeIcons() {
+    theme = localStorage.getItem("theme") || "system";
+    Array.from(sunIcon).forEach((el) =>
+      el.classList.toggle("hidden", theme !== "light"),
+    );
+    Array.from(moonIcon).forEach((el) =>
+      el.classList.toggle("hidden", theme !== "dark"),
+    );
+    Array.from(systemIcon).forEach((el) =>
+      el.classList.toggle("hidden", theme !== "system"),
+    );
+  }
+
+  // Apply theme on load
+  applyTheme(theme);
+  setThemeIcons();
+
+  // Listen for system changes if in system mode
+  window
+    .matchMedia("(prefers-color-scheme: dark)")
+    .addEventListener("change", (e) => {
+      if (localStorage.getItem("theme") === "system") {
+        applyTheme("system");
+        setThemeIcons();
+      }
+    });
+
+  // Toggle between light, dark, and system on click
+  document.querySelectorAll(".simple-dark-toggle").forEach((toggleBtn) => {
+    toggleBtn.addEventListener("click", () => {
+      theme = localStorage.getItem("theme") || "system";
+      let nextTheme;
+      if (theme === "light") nextTheme = "dark";
+      else if (theme === "dark") nextTheme = "system";
+      else nextTheme = "light";
+      localStorage.setItem("theme", nextTheme);
+      applyTheme(nextTheme);
+      setThemeIcons();
+    });
+  });
+</script>
