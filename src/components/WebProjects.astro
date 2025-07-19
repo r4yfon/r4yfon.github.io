@@ -1,0 +1,96 @@
+---
+import { getCollection } from "astro:content";
+const webProjects = await getCollection("web-projects");
+if (!webProjects || webProjects.length === 0) {
+  throw new Error(
+    "No web projects found. Please add some to the 'web-projects' collection.",
+  );
+}
+---
+
+<section id="projects" class="my-12 container mx-auto min-h-[450px]">
+  <h2 class="text-3xl font-bold mb-8">Web Projects</h2>
+
+  <div class="flex flex-col md:flex-row gap-10">
+    <!-- Project List -->
+    <div class="w-full md:w-2/5">
+      <ul id="project-list">
+        {
+          webProjects.map((project) => (
+            <li key={project.data.slug} class="mb-4">
+              <a
+                href={`/web-projects/${project.data.slug}`}
+                class="block p-4 bg-gray-100 rounded-xl shadow hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors"
+                data-thumb={project.data.thumbnail}
+                data-title={project.data.title}
+                onmouseover={`window.showThumbnail('${project.data.thumbnail}', '${project.data.title}')`}
+                onfocus={`window.showThumbnail('${project.data.thumbnail}', '${project.data.title}')`}>
+                <span class="text-xl font-semibold">{project.data.title}</span>
+                <span class="text-sm ms-2 text-gray-500">
+                  {project.data.date ? project.data.date : ""}
+                </span>
+                <p class="mt-2 text-gray-700 dark:text-gray-400">
+                  {project.data.description}
+                </p>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+    <!-- Thumbnail Preview -->
+    <div class="hidden md:flex flex-col w-3/5 items-center justify-center">
+      <!-- <div id="thumbnail-preview" class="flex items-center justify-center"> -->
+      <!-- Default preview or empty -->
+      <img
+        id="preview-img"
+        src=""
+        alt=""
+        class="object-cover rounded-xl shadow-lg opacity-0 transition-opacity duration-300 -rotate-6"
+      />
+      <svg
+        id="preview-icon"
+        xmlns="http://www.w3.org/2000/svg"
+        width="128"
+        height="128"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="lucide lucide-ghost-icon lucide-ghost"
+        ><path d="M9 10h.01"></path><path d="M15 10h.01"></path><path
+          d="M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"
+        ></path></svg
+      >
+      <span id="preview-title" class="mt-6">
+        Hover over a project for a preview.
+      </span>
+    </div>
+    <!-- </div> -->
+  </div>
+  <script>
+    const previewIcon = document.getElementById("preview-icon");
+    window.showThumbnail = (src, title) => {
+      const img = document.getElementById("preview-img");
+      const caption = document.getElementById("preview-title");
+      if (img instanceof HTMLImageElement && previewIcon) {
+        img.src = src;
+        img.alt = title;
+        img.style.opacity = src ? "1" : "0";
+        previewIcon.style.display = src ? "none" : "block";
+      }
+      if (caption) {
+        caption.textContent = title;
+      }
+    };
+    // Optional: clear preview on mouse leave
+    const projectList = document.getElementById("project-list");
+    if (projectList) {
+      projectList.addEventListener("mouseleave", () => {
+        window.showThumbnail("", "Hover over a project for a preview.");
+      });
+    }
+  </script>
+</section>

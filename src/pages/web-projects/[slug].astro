@@ -1,0 +1,46 @@
+---
+import { getCollection, getEntryBySlug } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
+
+// Required for dynamic routes!
+export async function getStaticPaths() {
+  const projects = await getCollection("web-projects");
+  return projects.map((project: { data: { slug: string } }) => ({
+    params: { slug: project.data.slug },
+    props: {},
+  }));
+}
+
+// Get the slug from the URL
+const { slug } = Astro.params;
+
+// Fetch the project entry
+const webProject = await getEntryBySlug("web-projects", slug);
+
+if (!webProject) {
+  throw new Error(`Web project not found for slug: ${slug}`);
+}
+---
+
+<Layout>
+  <article
+    class="container mx-auto my-12 p-6 rounded-xl shadow bg-gray-100 dark:bg-gray-800">
+    <h1 class="text-4xl font-bold mb-4">{webProject.data.title}</h1>
+    <p class="text-gray-500 mb-2">{webProject.data.date}</p>
+    {
+      webProject.data.cover && (
+        <img
+          src={webProject.data.cover}
+          alt={webProject.data.title}
+          class="mb-6 rounded-xl shadow"
+        />
+      )
+    }
+    <p class="mb-6 text-lg text-gray-700 dark:text-gray-200">
+      {webProject.data.summary}
+    </p>
+    <div class="prose dark:prose-invert">
+      {webProject.body}
+    </div>
+  </article>
+</Layout>
