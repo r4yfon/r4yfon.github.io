@@ -40,87 +40,54 @@
       <title>Toggle dark mode</title>
     </svg>
   </span>
-  <span class="system-icon">
-    <!-- Lucide Monitor/System SVG -->
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      class="lucide lucide-monitor-icon">
-      <rect x="2" y="3" width="20" height="14" rx="2"></rect>
-      <line x1="8" y1="21" x2="16" y2="21"></line>
-      <line x1="12" y1="17" x2="12" y2="21"></line>
-      <title>Follow system theme</title>
-    </svg>
-  </span>
 </button>
 
 <script>
+  // const checkbox = document.getElementById("dark") as HTMLInputElement;
   const sunIcon = document.getElementsByClassName("sun-icon");
   const moonIcon = document.getElementsByClassName("moon-icon");
-  const systemIcon = document.getElementsByClassName("system-icon");
 
-  // Get theme from localStorage, default to "system"
-  let theme: string | null = localStorage.getItem("theme");
-  if (theme === null) theme = "system";
-
-  function applyTheme(theme: string) {
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else if (theme === "light") {
-      document.documentElement.classList.remove("dark");
-    } else if (theme === "system") {
-      const prefersDark = window.matchMedia(
-        "(prefers-color-scheme: dark)",
-      ).matches;
-      document.documentElement.classList.toggle("dark", prefersDark);
-    }
-  }
-
+  // Set initial state based on theme
   function setThemeIcons() {
-    theme = localStorage.getItem("theme") || "system";
-    Array.from(sunIcon).forEach((el) =>
-      el.classList.toggle("hidden", theme !== "light"),
-    );
-    Array.from(moonIcon).forEach((el) =>
-      el.classList.toggle("hidden", theme !== "dark"),
-    );
-    Array.from(systemIcon).forEach((el) =>
-      el.classList.toggle("hidden", theme !== "system"),
-    );
+    const isDark = document.documentElement.classList.contains("dark");
+    // For both toggle and button, update icons
+    if (sunIcon)
+      Array.from(sunIcon).forEach((el) =>
+        el.classList.toggle("hidden", isDark),
+      );
+    if (moonIcon)
+      Array.from(moonIcon).forEach((el) =>
+        el.classList.toggle("hidden", !isDark),
+      );
   }
 
-  // Apply theme on load
-  applyTheme(theme);
+  // On load, set theme from localStorage or system preference
+  if (
+    localStorage.getItem("theme") === "dark" ||
+    (!localStorage.getItem("theme") &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches)
+  ) {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
   setThemeIcons();
 
-  // Listen for system changes if in system mode
-  window
-    .matchMedia("(prefers-color-scheme: dark)")
-    .addEventListener("change", (e) => {
-      if (localStorage.getItem("theme") === "system") {
-        applyTheme("system");
+  const simpleDarkToggle =
+    document.getElementsByClassName("simple-dark-toggle");
+  if (simpleDarkToggle) {
+    Array.from(simpleDarkToggle).forEach((toggleBtn) => {
+      toggleBtn.addEventListener("click", () => {
+        const isDark = document.documentElement.classList.contains("dark");
+        if (!isDark) {
+          document.documentElement.classList.add("dark");
+          localStorage.setItem("theme", "dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+          localStorage.setItem("theme", "light");
+        }
         setThemeIcons();
-      }
+      });
     });
-
-  // Toggle between light, dark, and system on click
-  document.querySelectorAll(".simple-dark-toggle").forEach((toggleBtn) => {
-    toggleBtn.addEventListener("click", () => {
-      theme = localStorage.getItem("theme") || "system";
-      let nextTheme;
-      if (theme === "light") nextTheme = "dark";
-      else if (theme === "dark") nextTheme = "system";
-      else nextTheme = "light";
-      localStorage.setItem("theme", nextTheme);
-      applyTheme(nextTheme);
-      setThemeIcons();
-    });
-  });
+  }
 </script>

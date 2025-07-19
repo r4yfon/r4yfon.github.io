@@ -8,7 +8,7 @@ if (!webProjects || webProjects.length === 0) {
 }
 ---
 
-<section id="projects" class="my-12 container mx-auto min-h-[450px]">
+<section id="projects" class="my-12 container mx-auto">
   <h2 class="text-3xl font-bold mb-8">Web Projects</h2>
 
   <div class="flex flex-col md:flex-row gap-10">
@@ -39,14 +39,15 @@ if (!webProjects || webProjects.length === 0) {
       </ul>
     </div>
     <!-- Thumbnail Preview -->
-    <div class="hidden md:flex flex-col w-3/5 items-center justify-center">
+    <div
+      class="hidden md:flex flex-col w-3/5 items-center justify-center h-[450px]">
       <!-- <div id="thumbnail-preview" class="flex items-center justify-center"> -->
       <!-- Default preview or empty -->
       <img
         id="preview-img"
         src=""
         alt=""
-        class="object-cover rounded-xl shadow-lg opacity-0 transition-opacity duration-300 -rotate-6"
+        class="object-cover rounded-xl shadow-lg opacity-0 transition-opacity duration-300 -rotate-6 max-h-full"
       />
       <svg
         id="preview-icon"
