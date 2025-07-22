@@ -1,5 +1,4 @@
-import { EmblaOptionsType } from "embla-carousel";
-import { graphql, useStaticQuery } from "gatsby";
+import { graphql, Link, useStaticQuery } from "gatsby";
 import React, { useState } from "react";
 import {
   Carousel,
@@ -37,14 +36,14 @@ function useMediaQuery(query: string): boolean {
   return matches;
 }
 
-const options: EmblaOptionsType = {
-  breakpoints: {
-    "(min-width: 768px)": {
-      // For tablets and up
-      active: false,
-    },
-  },
-};
+// const options: EmblaOptionsType = {
+//   breakpoints: {
+//     "(min-width: 768px)": {
+//       // For tablets and up
+//       active: false,
+//     },
+//   },
+// };
 
 const WebProjects: React.FC = () => {
   const [preview, setPreview] = useState<{ src: string; title: string }>({
@@ -81,9 +80,9 @@ const WebProjects: React.FC = () => {
         {/* Carousel */}
         <Carousel
           orientation={orientation}
-          opts={options}
+          // opts={options}
           className="!w-full md:!w-2/5">
-          <div className="flex relative md:hidden mb-2 justify-end gap-x-2">
+          <div className="flex top-0 -translate-y-12 right-0 absolute md:hidden mb-2 justify-end gap-x-2">
             <CarouselPrevious className="static translate-0" />
             <CarouselNext className="static translate-0" />
           </div>
@@ -110,8 +109,8 @@ const WebProjects: React.FC = () => {
                     title: "Hover over a project for a preview.",
                   })
                 }>
-                <a
-                  href={`/web-projects/${item.frontmatter.slug}`}
+                <Link
+                  to={`/web-projects/${item.frontmatter.slug}`}
                   className="block p-4 bg-gray-100 rounded-xl hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors min-w-[80vw] md:min-w-0">
                   <span className="text-xl font-semibold">
                     {item.frontmatter.title}
@@ -138,7 +137,7 @@ const WebProjects: React.FC = () => {
                     alt={item.frontmatter.title}
                     className="block mt-4 rounded-lg w-full aspect-video object-cover md:hidden"
                   />
-                </a>
+                </Link>
               </CarouselItem>
             ))}
           </CarouselContent>

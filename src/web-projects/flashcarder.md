@@ -1,10 +1,35 @@
 ---
 title: Flashcarder
-description: A web-based flashcard application for efficient learning and memorization.
 slug: flashcarder
 year: 2025
-tags: [SvelteKit, Tailwind CSS, SQLite, Drizle ORM, ]
+description: A web-based flashcard application for efficient learning and memorisation.
+tags: [SvelteKit, Tailwind CSS, SQLite, Drizzle ORM]
 thumbnail: flashcarder-thumbnail.webp
+github: https://github.com/rayfon/flashcarder
 ---
 
 Flashcarder is a simple and interactive web application designed to help users create, manage, and study flashcards. Ideal for students and lifelong learners, it offers an intuitive interface for building custom decks and tracking progress.
+
+## Features
+
+- Create, edit, and delete flashcards and decks
+- Study mode with spaced repetition
+- Progress tracking and statistics
+- Responsive design for mobile and desktop
+
+## Technologies Used
+
+- SvelteKit
+- Tailwind CSS
+- SQLite
+- Drizzle ORM
+
+## Screenshots
+
+![Decks page](images/flashcarder-decks.webp)
+![Study mode](images/flashcarder-study.webp)
+
+## Links
+
+- [GitHub Repository](https://github.com/rayfon/flashcarder)
+- [Live Demo](https://flashcarder.example.com)
