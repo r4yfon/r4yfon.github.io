@@ -1,4 +1,5 @@
 import { EmblaOptionsType } from "embla-carousel";
+import { graphql, useStaticQuery } from "gatsby";
 import React, { useState } from "react";
 import {
   Carousel,
@@ -8,13 +9,15 @@ import {
   CarouselPrevious,
 } from "./ui/carousel";
 
-// Example project type and data (replace with your actual data source)
-type Project = {
-  slug: string;
-  title: string;
-  date?: string;
-  description: string;
-  thumbnail: string;
+type project = {
+  frontmatter: {
+    slug: string;
+    title: string;
+    year: string;
+    description: string;
+    thumbnail: string;
+    tags: [string];
+  };
 };
 
 // Simple useMediaQuery hook for client-side media queries
@@ -34,49 +37,6 @@ function useMediaQuery(query: string): boolean {
   return matches;
 }
 
-const webProjects: Project[] = [
-  // Example data; replace with your real data
-  {
-    slug: "my-first-project",
-    title: "My First Project",
-    date: "2024-01-01",
-    description: "A cool project.",
-    thumbnail: "/images/project1.png",
-  },
-  {
-    slug: "my-second-project",
-    title: "My Second Project",
-    date: "2024-02-01",
-    description: "Another cool project.",
-    thumbnail: "/images/project2.png",
-  },
-  {
-    slug: "portfolio-redesign",
-    title: "Portfolio Redesign",
-    date: "2024-03-15",
-    description:
-      "A modern redesign of my personal portfolio using Gatsby and Tailwind CSS.",
-    thumbnail: "/images/portfolio-redesign.png",
-  },
-  {
-    slug: "ecommerce-demo",
-    title: "E-commerce Demo",
-    date: "2024-04-10",
-    description:
-      "A demo e-commerce site with product listings, cart, and checkout flow.",
-    thumbnail: "/images/ecommerce-demo.png",
-  },
-  {
-    slug: "blog-platform",
-    title: "Blog Platform",
-    date: "2024-05-05",
-    description:
-      "A full-featured blog platform with markdown support and user authentication.",
-    thumbnail: "/images/blog-platform.png",
-  },
-  // ...more projects
-];
-
 const options: EmblaOptionsType = {
   breakpoints: {
     "(min-width: 768px)": {
@@ -93,28 +53,52 @@ const WebProjects: React.FC = () => {
   });
   const isSmall = useMediaQuery("(max-width: 671px)");
   const orientation = isSmall ? "horizontal" : "vertical";
+  const webProjects = useStaticQuery(graphql`
+    query {
+      allMarkdownRemark {
+        nodes {
+          frontmatter {
+            slug
+            tags
+            title
+            year
+            thumbnail
+            description
+          }
+        }
+      }
+    }
+  `).allMarkdownRemark.nodes;
+
+  // console.log(webProjects);
 
   return (
     <section
       id="projects"
       className="my-12 container px-4 sm:px-6 lg:px-8 mx-auto">
       <h2 className="text-3xl font-bold mb-8">Web Projects</h2>
-      <div className="flex">
+      <div className="flex gap-10">
         {/* Carousel */}
         <Carousel
           orientation={orientation}
           opts={options}
           className="!w-full md:!w-2/5">
           <CarouselContent className="">
-            {webProjects.map((item) => (
+            {webProjects.map((item: project) => (
               <CarouselItem
-                key={item.slug}
+                key={item.frontmatter.slug}
                 className="!w-full flex-shrink-0"
                 onMouseOver={() =>
-                  setPreview({ src: item.thumbnail, title: item.title })
+                  setPreview({
+                    src: item.frontmatter.thumbnail,
+                    title: item.frontmatter.title,
+                  })
                 }
                 onFocus={() =>
-                  setPreview({ src: item.thumbnail, title: item.title })
+                  setPreview({
+                    src: item.frontmatter.thumbnail,
+                    title: item.frontmatter.title,
+                  })
                 }
                 onMouseLeave={() =>
                   setPreview({
@@ -123,20 +107,32 @@ const WebProjects: React.FC = () => {
                   })
                 }>
                 <a
-                  href={`/web-projects/${item.slug}`}
+                  href={`/web-projects/${item.frontmatter.slug}`}
                   className="block p-4 bg-gray-100 rounded-xl hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors min-w-[80vw] md:min-w-0">
-                  <span className="text-xl font-semibold">{item.title}</span>
+                  <span className="text-xl font-semibold">
+                    {item.frontmatter.title}
+                  </span>
                   <span className="text-sm ms-2 text-gray-500">
-                    {item.date ?? ""}
+                    {item.frontmatter.year}
                   </span>
                   <p className="mt-2 text-gray-700 dark:text-gray-400">
-                    {item.description}
+                    {item.frontmatter.description}
                   </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {item.frontmatter.tags &&
+                      item.frontmatter.tags.map((tag: string) => (
+                        <span
+                          key={tag}
+                          className="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full dark:bg-blue-900 dark:text-blue-200">
+                          {tag}
+                        </span>
+                      ))}
+                  </div>
                   {/* Show screenshot in carousel on mobile only */}
                   <img
-                    src={item.thumbnail}
-                    alt={item.title}
-                    className="block mt-4 rounded-lg w-full h-40 object-cover md:hidden"
+                    src={`images/${item.frontmatter.thumbnail}`}
+                    alt={item.frontmatter.title}
+                    className="block mt-4 rounded-lg w-full aspect-video object-cover md:hidden"
                   />
                 </a>
               </CarouselItem>
@@ -149,12 +145,15 @@ const WebProjects: React.FC = () => {
         {/* Screenshot Preview (hidden on mobile, shown md+) */}
         <div className="hidden md:flex flex-col w-3/5 items-center justify-center h-[450px]">
           {preview.src ? (
-            <img
-              id="preview-img"
-              src={preview.src}
-              alt={preview.title}
-              className="object-cover rounded-xl shadow-lg opacity-100 transition-opacity duration-300 -rotate-6 max-h-full"
-            />
+            <>
+              <img
+                id="preview-img"
+                src={`images/${preview.src}`}
+                alt={preview.title}
+                className="object-cover rounded-xl shadow-lg opacity-100 transition-opacity duration-300 -rotate-6 max-h-full"
+              />
+              <span className="mt-6">{preview.title}</span>
+            </>
           ) : (
             <>
               <svg
