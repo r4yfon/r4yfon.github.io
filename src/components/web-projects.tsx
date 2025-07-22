@@ -76,13 +76,17 @@ const WebProjects: React.FC = () => {
     <section
       id="projects"
       className="my-12 container px-4 sm:px-6 lg:px-8 mx-auto">
-      <h2 className="text-3xl font-bold mb-8">Web Projects</h2>
+      <h2 className="text-3xl font-bold mb-4">Web Projects</h2>
       <div className="flex gap-10">
         {/* Carousel */}
         <Carousel
           orientation={orientation}
           opts={options}
           className="!w-full md:!w-2/5">
+          <div className="flex relative md:hidden mb-2 justify-end gap-x-2">
+            <CarouselPrevious className="static translate-0" />
+            <CarouselNext className="static translate-0" />
+          </div>
           <CarouselContent className="">
             {webProjects.map((item: project) => (
               <CarouselItem
@@ -138,8 +142,6 @@ const WebProjects: React.FC = () => {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="absolute left-12/14 -top-13 -translate-y-1/2  md:hidden" />
-          <CarouselNext className="absolute right-0 -top-13 -translate-y-1/2  md:hidden" />
         </Carousel>
 
         {/* Screenshot Preview (hidden on mobile, shown md+) */}
