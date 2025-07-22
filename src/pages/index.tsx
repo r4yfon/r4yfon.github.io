@@ -1,13 +1,12 @@
 import WebProjects from "@/components/web-projects";
 import type { HeadFC } from "gatsby";
 import React from "react";
-import Navbar from "../components/navbar";
+import Layout from "../components/layout";
 
 const IndexPage: React.FC = () => (
-  <>
-    <Navbar />
+  <Layout pageTitle="Home">
     <WebProjects />
-  </>
+  </Layout>
 );
 
 export default IndexPage;
