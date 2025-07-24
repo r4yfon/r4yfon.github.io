@@ -1,24 +1,29 @@
 import React, { useEffect } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
+// Move dark mode logic to a function
+function toggleDarkMode() {
+  const isDark = document.documentElement.classList.contains("dark");
+  if (!isDark) {
+    document.documentElement.classList.add("dark");
+    localStorage.setItem("theme", "dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+    localStorage.setItem("theme", "light");
+  }
+  setThemeIcons();
+}
+
+function setThemeIcons() {
+  const sunIcon = document.getElementsByClassName("sun-icon");
+  const moonIcon = document.getElementsByClassName("moon-icon");
+  const isDark = document.documentElement.classList.contains("dark");
+  Array.from(sunIcon).forEach((el) => el.classList.toggle("hidden", isDark));
+  Array.from(moonIcon).forEach((el) => el.classList.toggle("hidden", !isDark));
+}
+
 const Navbar: React.FC = () => {
-  // Inline dark mode button logic (from Astro component)
   useEffect(() => {
-    const sunIcon = document.getElementsByClassName("sun-icon");
-    const moonIcon = document.getElementsByClassName("moon-icon");
-
-    function setThemeIcons() {
-      const isDark = document.documentElement.classList.contains("dark");
-      if (sunIcon)
-        Array.from(sunIcon).forEach((el) =>
-          el.classList.toggle("hidden", isDark),
-        );
-      if (moonIcon)
-        Array.from(moonIcon).forEach((el) =>
-          el.classList.toggle("hidden", !isDark),
-        );
-    }
-
     // Set initial theme
     if (
       localStorage.getItem("theme") === "dark" ||
@@ -30,34 +35,10 @@ const Navbar: React.FC = () => {
       document.documentElement.classList.remove("dark");
     }
     setThemeIcons();
-
-    const simpleDarkToggle =
-      document.getElementsByClassName("simple-dark-toggle");
-    function handleClick() {
-      const isDark = document.documentElement.classList.contains("dark");
-      if (!isDark) {
-        document.documentElement.classList.add("dark");
-        localStorage.setItem("theme", "dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-        localStorage.setItem("theme", "light");
-      }
-      setThemeIcons();
-    }
-    Array.from(simpleDarkToggle).forEach((btn) => {
-      btn.addEventListener("click", handleClick);
-    });
-
-    // Cleanup
-    return () => {
-      Array.from(simpleDarkToggle).forEach((btn) => {
-        btn.removeEventListener("click", handleClick);
-      });
-    };
   }, []);
 
   return (
-    <nav className="px-4 sm:px-6 lg:px-8 mx-auto flex items-center justify-between py-2 sticky top-0 z-50 text-gray-500 dark:text-white">
+    <nav className="px-4 sm:px-6 lg:px-8 mx-auto flex items-center justify-between py-2 sticky top-0 z-50 text-gray-500 dark:text-white bg-background">
       <a
         className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2"
         href="/">
@@ -144,7 +125,8 @@ const Navbar: React.FC = () => {
         <button
           className="simple-dark-toggle p-2 me-3 md:me-0 flex gap-x-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600"
           aria-label="Toggle dark mode"
-          type="button">
+          type="button"
+          onClick={toggleDarkMode}>
           <span className="sun-icon hidden">
             {/* Lucide Sun SVG */}
             <svg
@@ -282,7 +264,8 @@ const Navbar: React.FC = () => {
               className="simple-dark-toggle px-2 py-1 me-3 md:me-0 flex gap-x-1 rounded-md w-full text-gray-500 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600"
               aria-label="Toggle dark mode"
               type="button"
-              id="mobile-dark-toggle">
+              id="mobile-dark-toggle"
+              onClick={toggleDarkMode}>
               <span className="sun-icon hidden">
                 {/* Lucide Sun SVG */}
                 <svg
