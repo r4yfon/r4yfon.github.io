@@ -11,7 +11,7 @@ interface WebProjectTemplateProps {
         title: string;
         thumbnail: string;
         tags: string[];
-        github: string;
+        github?: string | null;
         description: string;
         year: number;
       };
