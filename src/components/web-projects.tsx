@@ -54,7 +54,7 @@ const WebProjects: React.FC = () => {
   const orientation = isSmall ? "horizontal" : "vertical";
   const webProjects = useStaticQuery(graphql`
     query {
-      allMarkdownRemark {
+      allMdx {
         nodes {
           frontmatter {
             slug
@@ -67,7 +67,7 @@ const WebProjects: React.FC = () => {
         }
       }
     }
-  `).allMarkdownRemark.nodes;
+  `).allMdx.nodes;
 
   // console.log(webProjects);
 

@@ -15,25 +15,26 @@ export const onCreateWebpackConfig: GatsbyNode["onCreateWebpackConfig"] = ({
   });
 };
 
-// exports.createPages = async ({ graphql, actions }) => {
-//   const { createPage } = actions;
-//   const result = await graphql(`
-//     {
-//       allMarkdownRemark {
-//         nodes {
-//           frontmatter {
-//             slug
-//           }
-//         }
-//       }
-//     }
-//   `);
+exports.createPages = async ({ graphql, actions }) => {
+  const { createPage } = actions;
+  const result = await graphql(`
+    {
+      allMdx {
+        nodes {
+          frontmatter {
+            slug
+          }
+        }
+      }
+    }
+  `);
 
-//   result.data.allMarkdownRemark.nodes.forEach((node) => {
-//     createPage({
-//       path: `/web-projects/${node.frontmatter.slug}`,
-//       component: path.resolve(`src/pages/web-projects.tsx`),
-//       context: { slug: node.frontmatter.slug },
-//     });
-//   });
-// };
+  result.data.allMdx.nodes.forEach((node) => {
+    createPage({
+      path: `/web-projects/${node.frontmatter.slug}`,
+      component: path.resolve(`src/templates/web-projects.tsx`),
+      context: { slug: node.frontmatter.slug },
+    });
+  });
+};
+
