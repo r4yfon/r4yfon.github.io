@@ -144,7 +144,7 @@ const WebProjects: React.FC = () => {
         </Carousel>
 
         {/* Screenshot Preview (hidden on mobile, shown md+) */}
-        <div className="hidden md:flex flex-col w-3/5 items-center justify-center h-[450px]">
+        <div className="hidden md:flex flex-col w-3/5 items-center justify-center min-h-[450px]">
           {preview.src ? (
             <>
               <img
