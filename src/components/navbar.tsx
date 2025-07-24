@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 // Move dark mode logic to a function
@@ -23,6 +23,8 @@ function setThemeIcons() {
 }
 
 const Navbar: React.FC = () => {
+  const [popoverOpen, setPopoverOpen] = useState(false);
+
   useEffect(() => {
     // Set initial theme
     if (
@@ -36,6 +38,12 @@ const Navbar: React.FC = () => {
     }
     setThemeIcons();
   }, []);
+
+  useEffect(() => {
+    if (popoverOpen) {
+      setThemeIcons();
+    }
+  }, [popoverOpen]);
 
   return (
     <nav className="px-4 sm:px-6 lg:px-8 mx-auto flex items-center justify-between py-2 sticky top-0 z-50 text-gray-500 dark:text-white bg-background">
@@ -174,7 +182,7 @@ const Navbar: React.FC = () => {
 
       {/* Hamburger for mobile */}
       <div className="md:hidden flex items-center">
-        <Popover>
+        <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
           <PopoverTrigger className="hover:bg-gray-200 p-1 rounded-md">
             <svg
               xmlns="http://www.w3.org/2000/svg"
