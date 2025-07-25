@@ -1,6 +1,5 @@
-import * as path from "path";
-
-import type { GatsbyNode } from "gatsby";
+import { GatsbyNode } from "gatsby";
+import path from "path";
 
 export const onCreateWebpackConfig: GatsbyNode["onCreateWebpackConfig"] = ({
   actions,
@@ -9,32 +8,51 @@ export const onCreateWebpackConfig: GatsbyNode["onCreateWebpackConfig"] = ({
     resolve: {
       alias: {
         "@/components": path.resolve(__dirname, "src/components"),
-        "@/lib/utils": path.resolve(__dirname, "src/lib/utils"),
+        "@/lib": path.resolve(__dirname, "src/lib"),
       },
     },
   });
 };
 
-exports.createPages = async ({ graphql, actions }) => {
+export const createPages: GatsbyNode["createPages"] = async ({
+  graphql,
+  actions,
+}) => {
   const { createPage } = actions;
+
+  // Query MDX files (not markdownRemark)
   const result = await graphql(`
-    {
+    query {
       allMdx {
         nodes {
           frontmatter {
             slug
+          }
+          internal {
+            contentFilePath
           }
         }
       }
     }
   `);
 
-  result.data.allMdx.nodes.forEach((node) => {
-    createPage({
-      path: `/web-projects/${node.frontmatter.slug}`,
-      component: path.resolve(`src/templates/web-projects.tsx`),
-      context: { slug: node.frontmatter.slug },
-    });
+  if (result.errors) {
+    throw result.errors;
+  }
+
+  const mdxNodes = result.data.allMdx.nodes;
+
+  mdxNodes.forEach((node) => {
+    if (node.frontmatter.slug) {
+      createPage({
+        path: `/web-projects/${node.frontmatter.slug}`,
+        component: `${path.resolve(
+          "./src/templates/web-projects.tsx",
+        )}?__contentFilePath=${node.internal.contentFilePath}`,
+        context: {
+          slug: node.frontmatter.slug,
+        },
+      });
+    }
   });
 };
-

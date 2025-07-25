@@ -20,7 +20,6 @@ const config: GatsbyConfig = {
         name: "web-projects",
         path: `${__dirname}/src/web-projects/`,
       },
-      __key: "pages",
     },
   ],
 };

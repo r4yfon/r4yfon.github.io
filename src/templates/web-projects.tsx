@@ -1,6 +1,5 @@
 import Layout from "@/components/layout";
 import { Button } from "@/components/ui/button";
-import { MDXProvider } from "@mdx-js/react";
 import { graphql } from "gatsby";
 import React from "react";
 
@@ -16,12 +15,15 @@ interface WebProjectTemplateProps {
         year: number;
       };
     };
-    body: string;
   };
+  children: React.ReactNode;
 }
 
-const WebProjectTemplate: React.FC<WebProjectTemplateProps> = ({ data }) => {
-  const { frontmatter, body } = data.mdx;
+const WebProjectTemplate: React.FC<WebProjectTemplateProps> = ({
+  data,
+  children,
+}) => {
+  const { frontmatter } = data.mdx;
 
   return (
     <Layout>
@@ -78,7 +80,7 @@ const WebProjectTemplate: React.FC<WebProjectTemplateProps> = ({ data }) => {
 
         {/* MDX Content */}
         <div className="max-w-4xl mx-auto">
-          {/* <div
+          <div
             className="[&>h1]:text-3xl [&>h1]:font-bold [&>h1]:mb-4 [&>h1]:mt-8
                           [&>h2]:text-2xl [&>h2]:font-semibold [&>h2]:mb-3 [&>h2]:mt-6
                           [&>h3]:text-xl [&>h3]:font-medium [&>h3]:mb-2 [&>h3]:mt-4
@@ -86,10 +88,13 @@ const WebProjectTemplate: React.FC<WebProjectTemplateProps> = ({ data }) => {
                           [&>ul]:mb-4 [&>ul]:pl-6 [&>li]:mb-1 [&>li]:list-disc
                           [&>a]:text-blue-600 [&>a]:underline hover:[&>a]:text-blue-800
                           dark:[&>a]:text-blue-400 dark:hover:[&>a]:text-blue-300
-                          [&>img]:rounded-lg [&>img]:shadow-md [&>img]:my-6 [&>img]:max-w-full">
-            {body}
-          </div> */}
-          <MDXProvider>{body}</MDXProvider>
+                          [&>img]:rounded-lg [&>img]:shadow-md [&>img]:my-6 [&>img]:max-w-full
+                          [&>pre]:bg-gray-100 [&>pre]:p-4 [&>pre]:rounded-lg [&>pre]:overflow-x-auto
+                          dark:[&>pre]:bg-gray-800
+                          [&>code]:bg-gray-100 [&>code]:px-1 [&>code]:rounded
+                          dark:[&>code]:bg-gray-800">
+            {children}
+          </div>
         </div>
       </div>
     </Layout>
@@ -109,7 +114,6 @@ export const query = graphql`
         description
         year
       }
-      body
     }
   }
 `;
