@@ -21,6 +21,13 @@ const config: GatsbyConfig = {
         path: `${__dirname}/src/web-projects/`,
       },
     },
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        name: `assets`,
+        path: `${__dirname}/static/assets/`,
+      },
+    },
   ],
 };
 

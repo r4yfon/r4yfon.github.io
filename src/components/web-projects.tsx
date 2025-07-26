@@ -14,7 +14,6 @@ type project = {
     title: string;
     year: string;
     description: string;
-    thumbnail: string;
     tags: [string];
   };
 };
@@ -36,15 +35,6 @@ function useMediaQuery(query: string): boolean {
   return matches;
 }
 
-// const options: EmblaOptionsType = {
-//   breakpoints: {
-//     "(min-width: 768px)": {
-//       // For tablets and up
-//       active: false,
-//     },
-//   },
-// };
-
 const WebProjects: React.FC = () => {
   const [preview, setPreview] = useState<{ src: string; title: string }>({
     src: "",
@@ -61,15 +51,12 @@ const WebProjects: React.FC = () => {
             tags
             title
             year
-            thumbnail
             description
           }
         }
       }
     }
   `).allMdx.nodes;
-
-  // console.log(webProjects);
 
   return (
     <section
@@ -78,28 +65,25 @@ const WebProjects: React.FC = () => {
       <h2 className="text-3xl font-bold mb-4">Web Projects</h2>
       <div className="flex gap-10">
         {/* Carousel */}
-        <Carousel
-          orientation={orientation}
-          // opts={options}
-          className="!w-full md:!w-2/5">
+        <Carousel orientation={orientation} className="!w-full md:!w-2/5">
           <div className="flex top-0 -translate-y-12 right-0 absolute md:hidden mb-2 justify-end gap-x-2">
             <CarouselPrevious className="static translate-0" />
             <CarouselNext className="static translate-0" />
           </div>
-          <CarouselContent className="">
+          <CarouselContent>
             {webProjects.map((item: project) => (
               <CarouselItem
                 key={item.frontmatter.slug}
                 className="!w-full flex-shrink-0"
                 onMouseOver={() =>
                   setPreview({
-                    src: item.frontmatter.thumbnail,
+                    src: `assets/${item.frontmatter.slug}/thumbnail.webp`,
                     title: item.frontmatter.title,
                   })
                 }
                 onFocus={() =>
                   setPreview({
-                    src: item.frontmatter.thumbnail,
+                    src: `assets/${item.frontmatter.slug}/thumbnail.webp`,
                     title: item.frontmatter.title,
                   })
                 }
@@ -133,7 +117,7 @@ const WebProjects: React.FC = () => {
                   </div>
                   {/* Show screenshot in carousel on mobile only */}
                   <img
-                    src={`images/${item.frontmatter.thumbnail}`}
+                    src={`${preview.src}`}
                     alt={item.frontmatter.title}
                     className="block mt-4 rounded-lg w-full aspect-video object-cover md:hidden"
                   />
@@ -149,7 +133,7 @@ const WebProjects: React.FC = () => {
             <>
               <img
                 id="preview-img"
-                src={`images/${preview.src}`}
+                src={`${preview.src}`}
                 alt={preview.title}
                 className="object-cover rounded-xl shadow-lg opacity-100 transition-opacity duration-300 -rotate-6 max-h-full"
               />

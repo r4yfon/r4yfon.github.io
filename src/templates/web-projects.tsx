@@ -1,7 +1,15 @@
 import Layout from "@/components/layout";
 import MarkdownContent from "@/components/markdown-content";
 import { Button } from "@/components/ui/button";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import { graphql } from "gatsby";
+import { Globe } from "lucide-react";
 import React from "react";
 
 interface WebProjectTemplateProps {
@@ -9,12 +17,19 @@ interface WebProjectTemplateProps {
     mdx: {
       frontmatter: {
         title: string;
-        thumbnail: string;
         tags: string[];
-        github?: string | null;
+        url?: string | null;
+        website?: string | null;
         description: string;
         year: number;
       };
+    };
+    allFile: {
+      nodes: Array<{
+        publicURL: string;
+        name: string;
+        extension: string;
+      }>;
     };
   };
   children: React.ReactNode;
@@ -25,6 +40,12 @@ const WebProjectTemplate: React.FC<WebProjectTemplateProps> = ({
   children,
 }) => {
   const { frontmatter } = data.mdx;
+  const images = data.allFile.nodes;
+
+  // Helper function to determine if file is a video
+  const isVideo = (extension: string) => {
+    return ["webm", "mp4", "mov", "avi"].includes(extension.toLowerCase());
+  };
 
   return (
     <Layout>
@@ -55,27 +76,55 @@ const WebProjectTemplate: React.FC<WebProjectTemplateProps> = ({
 
           {/* Action Buttons */}
           <div className="flex gap-4">
-            {frontmatter.github && (
+            {frontmatter.url && (
               <Button asChild>
                 <a
-                  href={frontmatter.github}
+                  href={frontmatter.url}
                   target="_blank"
                   rel="noopener noreferrer">
-                  View on GitHub
+                  <Globe />
+                  View on {frontmatter.website}
                 </a>
               </Button>
             )}
           </div>
         </div>
 
-        {/* Thumbnail */}
-        {frontmatter.thumbnail && (
+        {/* Image/Video Carousel */}
+        {images.length > 0 && (
           <div className="mb-8">
-            <img
-              src={`/images/${frontmatter.thumbnail}`}
-              alt={frontmatter.title}
-              className="w-full max-w-4xl mx-auto rounded-lg shadow-lg"
-            />
+            <Carousel className="max-w-4xl mx-auto">
+              <CarouselContent>
+                {images.map((media, index) => (
+                  <CarouselItem key={index} className="content-center">
+                    <div className="p-2">
+                      {isVideo(media.extension) ? (
+                        <video
+                          src={media.publicURL}
+                          controls
+                          autoPlay={false}
+                          muted
+                          loop
+                          className="w-full rounded-lg shadow-lg"
+                          aria-label={`${frontmatter.title} video ${
+                            index + 1
+                          }`}>
+                          Your browser does not support the video tag.
+                        </video>
+                      ) : (
+                        <img
+                          src={media.publicURL}
+                          alt={`${frontmatter.title} screenshot ${index + 1}`}
+                          className="w-full rounded-lg shadow-lg"
+                        />
+                      )}
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
           </div>
         )}
 
@@ -95,11 +144,25 @@ export const query = graphql`
     mdx(frontmatter: { slug: { eq: $slug } }) {
       frontmatter {
         title
-        thumbnail
         tags
-        github
+        url
+        website
         description
         year
+      }
+    }
+    allFile(
+      filter: {
+        sourceInstanceName: { eq: "assets" }
+        relativeDirectory: { eq: $slug }
+        extension: { in: ["webp", "gif", "webm"] }
+      }
+      sort: { name: ASC }
+    ) {
+      nodes {
+        publicURL
+        name
+        extension
       }
     }
   }
