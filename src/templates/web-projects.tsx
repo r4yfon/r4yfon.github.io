@@ -8,8 +8,8 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { graphql } from "gatsby";
-import { Globe } from "lucide-react";
+import { graphql, Link } from "gatsby";
+import { ChevronLeft, ChevronRight, Globe } from "lucide-react";
 import React from "react";
 
 interface WebProjectTemplateProps {
@@ -32,15 +32,28 @@ interface WebProjectTemplateProps {
       }>;
     };
   };
+  pageContext: {
+    slug: string;
+    prevProject: {
+      slug: string;
+      title: string;
+    };
+    nextProject: {
+      slug: string;
+      title: string;
+    };
+  };
   children: React.ReactNode;
 }
 
 const WebProjectTemplate: React.FC<WebProjectTemplateProps> = ({
   data,
+  pageContext,
   children,
 }) => {
   const { frontmatter } = data.mdx;
   const images = data.allFile.nodes;
+  const { prevProject, nextProject } = pageContext;
 
   // Helper function to determine if file is a video
   const isVideo = (extension: string) => {
@@ -131,6 +144,41 @@ const WebProjectTemplate: React.FC<WebProjectTemplateProps> = ({
         {/* MDX Content */}
         <div className="max-w-4xl mx-auto">
           <MarkdownContent>{children}</MarkdownContent>
+        </div>
+
+        {/* Project Navigation */}
+        <div className="max-w-4xl mx-auto mt-16 pt-8 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex justify-between items-center">
+            <Button
+              asChild
+              variant="outline"
+              className="flex items-center h-auto gap-2">
+              <Link to={`/web-projects/${prevProject.slug}`}>
+                <ChevronLeft className="h-4 w-4" />
+                <div className="text-left">
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    Previous
+                  </div>
+                  <div className="font-medium">{prevProject.title}</div>
+                </div>
+              </Link>
+            </Button>
+
+            <Button
+              asChild
+              variant="outline"
+              className="flex items-center h-auto gap-2">
+              <Link to={`/web-projects/${nextProject.slug}`}>
+                <div className="text-right">
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    Next
+                  </div>
+                  <div className="font-medium">{nextProject.title}</div>
+                </div>
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
     </Layout>

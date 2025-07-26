@@ -44,7 +44,7 @@ const WebProjects: React.FC = () => {
   const orientation = isSmall ? "horizontal" : "vertical";
   const webProjects = useStaticQuery(graphql`
     query {
-      allMdx {
+      allMdx(sort: { frontmatter: { year: DESC } }) {
         nodes {
           frontmatter {
             slug

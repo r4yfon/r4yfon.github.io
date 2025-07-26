@@ -20,13 +20,16 @@ export const createPages: GatsbyNode["createPages"] = async ({
 }) => {
   const { createPage } = actions;
 
-  // Query MDX files (not markdownRemark)
+  // Query MDX files
   const result = await graphql(`
     query {
-      allMdx {
+      allMdx(sort: { frontmatter: { year: DESC } }) {
         nodes {
+          id
           frontmatter {
             slug
+            title
+            year
           }
           internal {
             contentFilePath
@@ -42,8 +45,14 @@ export const createPages: GatsbyNode["createPages"] = async ({
 
   const mdxNodes = result.data.allMdx.nodes;
 
-  mdxNodes.forEach((node) => {
+  mdxNodes.forEach((node, index) => {
     if (node.frontmatter.slug) {
+      // Calculate previous and next projects
+      const prevProject =
+        index > 0 ? mdxNodes[index - 1] : mdxNodes[mdxNodes.length - 1]; // Wrap to last
+      const nextProject =
+        index < mdxNodes.length - 1 ? mdxNodes[index + 1] : mdxNodes[0]; // Wrap to first
+
       createPage({
         path: `/web-projects/${node.frontmatter.slug}`,
         component: `${path.resolve(
@@ -51,6 +60,14 @@ export const createPages: GatsbyNode["createPages"] = async ({
         )}?__contentFilePath=${node.internal.contentFilePath}`,
         context: {
           slug: node.frontmatter.slug,
+          prevProject: {
+            slug: prevProject.frontmatter.slug,
+            title: prevProject.frontmatter.title,
+          },
+          nextProject: {
+            slug: nextProject.frontmatter.slug,
+            title: nextProject.frontmatter.title,
+          },
         },
       });
     }
