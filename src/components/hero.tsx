@@ -20,7 +20,7 @@ const Hero: React.FC = () => {
           <div className="flex flex-wrap gap-4">
             <Button asChild size="lg">
               <a
-                href="mailto:your.email@example.com"
+                href="mailto:srayfon93@gmail.com"
                 className="flex items-center gap-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -70,7 +70,7 @@ const Hero: React.FC = () => {
 
             <Button asChild variant="outline" size="lg">
               <a
-                href="https://github.com/yourusername"
+                href="https://github.com/r4yfon"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2">
