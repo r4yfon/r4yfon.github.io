@@ -56,7 +56,7 @@ export const createPages: GatsbyNode["createPages"] = async ({
       createPage({
         path: `/web-projects/${node.frontmatter.slug}`,
         component: `${path.resolve(
-          "./src/templates/web-projects.tsx",
+          "./src/pages/web-projects.tsx",
         )}?__contentFilePath=${node.internal.contentFilePath}`,
         context: {
           slug: node.frontmatter.slug,
