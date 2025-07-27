@@ -6,7 +6,7 @@ const Hero: React.FC = () => {
     <section className="min-h-[70vh] flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl w-full">
         <div className="text-left">
-          <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 font-caprasimo">
+          <h3 className="text-2xl sm:text-3xl lg:text-4xl mb-4 font-caprasimo">
             I'm Ray Fon
           </h3>
           <p className="text-lg sm:text-xl lg:text-2xl leading-relaxed text-gray-700 dark:text-gray-300 mb-8">
