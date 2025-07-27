@@ -60,7 +60,7 @@ const Navbar: React.FC = () => {
           href="https://drive.google.com/file/d/1G8rrqlHVj8YadlK36a5bVON5DN93Tp1u/view?usp=sharing"
           target="_blank"
           rel="noopener noreferrer"
-          className="px-3 py-2 flex gap-x-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 items-center">
+          className="px-3 py-2 flex gap-x-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 items-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="20"
@@ -86,7 +86,7 @@ const Navbar: React.FC = () => {
           href="https://github.com/r4yfon"
           target="_blank"
           rel="noopener noreferrer"
-          className="px-3 py-2 flex gap-x-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 items-center">
+          className="px-3 py-2 flex gap-x-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 items-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="20"
@@ -110,7 +110,7 @@ const Navbar: React.FC = () => {
           href="mailto:srayfon93@gmail.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="px-3 py-2 flex gap-x-1 rounded-md dark:hover:bg-gray-200 bg-gray-800 hover:bg-gray-600 text-white dark:text-black dark:bg-sky-50  items-center">
+          className="px-3 py-2 flex gap-x-2 rounded-md dark:hover:bg-gray-200 bg-gray-800 hover:bg-gray-600 text-white dark:text-black dark:bg-sky-50  items-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="20"
@@ -131,7 +131,7 @@ const Navbar: React.FC = () => {
 
         {/* Dark mode button */}
         <button
-          className="simple-dark-toggle p-2 me-3 md:me-0 flex gap-x-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600"
+          className="simple-dark-toggle p-2 me-3 md:me-0 flex gap-x-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600"
           aria-label="Toggle dark mode"
           type="button"
           onClick={toggleDarkMode}>
@@ -203,7 +203,7 @@ const Navbar: React.FC = () => {
               href="https://drive.google.com/file/d/1G8rrqlHVj8YadlK36a5bVON5DN93Tp1u/view?usp=sharing"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-2 flex gap-x-1 rounded-md hover:bg-gray-200 text-gray-500 dark:text-white dark:hover:bg-gray-600 items-center">
+              className="px-3 py-2 flex gap-x-2 rounded-md hover:bg-gray-200 text-gray-500 dark:text-white dark:hover:bg-gray-600 items-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -227,7 +227,7 @@ const Navbar: React.FC = () => {
               href="https://github.com/r4yfon"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-2 flex gap-x-1 rounded-md hover:bg-gray-200 text-gray-500 dark:text-white dark:hover:bg-gray-600 items-center">
+              className="px-3 py-2 flex gap-x-2 rounded-md hover:bg-gray-200 text-gray-500 dark:text-white dark:hover:bg-gray-600 items-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -249,7 +249,7 @@ const Navbar: React.FC = () => {
               href="mailto:srayfon93@gmail.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-2 flex gap-x-1 rounded-md dark:hover:bg-gray-200 bg-gray-800 hover:bg-gray-600 text-white dark:text-black dark:bg-sky-50  items-center">
+              className="px-3 py-2 flex gap-x-2 rounded-md dark:hover:bg-gray-200 bg-gray-800 hover:bg-gray-600 text-white dark:text-black dark:bg-sky-50  items-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -269,7 +269,7 @@ const Navbar: React.FC = () => {
             </a>
             {/* Dark mode button */}
             <button
-              className="simple-dark-toggle px-3 py-2 me-3 md:me-0 flex gap-x-1 rounded-md w-full text-gray-500 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600"
+              className="simple-dark-toggle px-3 py-2 me-3 md:me-0 flex gap-x-2 rounded-md w-full text-gray-500 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600"
               aria-label="Toggle dark mode"
               type="button"
               id="mobile-dark-toggle"
