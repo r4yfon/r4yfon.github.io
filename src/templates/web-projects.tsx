@@ -98,15 +98,17 @@ const WebProjectTemplate: React.FC<WebProjectTemplateProps> = ({
 
           {/* Action Buttons */}
           <div className="flex gap-4">
-            <Button asChild>
-              <a
-                href={frontmatter.url}
-                target="_blank"
-                rel="noopener noreferrer">
-                <CodeXml />
-                View on {frontmatter.website}
-              </a>
-            </Button>
+            {frontmatter.url && (
+              <Button asChild>
+                <a
+                  href={frontmatter.url}
+                  target="_blank"
+                  rel="noopener noreferrer">
+                  <CodeXml />
+                  View on {frontmatter.website}
+                </a>
+              </Button>
+            )}
             {frontmatter.demo && (
               <Button asChild>
                 <a
@@ -114,7 +116,7 @@ const WebProjectTemplate: React.FC<WebProjectTemplateProps> = ({
                   target="_blank"
                   rel="noopener noreferrer">
                   <Globe />
-                  View Demo
+                  View Site
                 </a>
               </Button>
             )}

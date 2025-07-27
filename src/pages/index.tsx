@@ -1,10 +1,12 @@
+import Hero from "@/components/hero";
 import WebProjects from "@/components/web-projects";
 import type { HeadFC } from "gatsby";
 import React from "react";
 import Layout from "../components/layout";
 
 const IndexPage: React.FC = () => (
-  <Layout pageTitle="Home">
+  <Layout>
+    <Hero />
     <WebProjects />
   </Layout>
 );

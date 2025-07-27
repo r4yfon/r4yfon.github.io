@@ -46,7 +46,7 @@ const Navbar: React.FC = () => {
   }, [popoverOpen]);
 
   return (
-    <nav className="px-4 sm:px-6 lg:px-8 mx-auto flex items-center justify-between py-2 sticky top-0 z-50 text-gray-500 dark:text-white bg-background/40 backdrop-blur-3xl backdrop-saturate-150 shadow-sm">
+    <nav className="px-4 sm:px-6 lg:px-8 mx-auto flex items-center justify-between py-3 sticky top-0 z-50 text-gray-500 dark:text-white bg-background/40 backdrop-blur-3xl backdrop-saturate-150 shadow-sm">
       <a
         className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2"
         href="/">
@@ -60,7 +60,7 @@ const Navbar: React.FC = () => {
           href="https://drive.google.com/file/d/1G8rrqlHVj8YadlK36a5bVON5DN93Tp1u/view?usp=sharing"
           target="_blank"
           rel="noopener noreferrer"
-          className="px-2 py-1 flex gap-x-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 items-center">
+          className="px-3 py-2 flex gap-x-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 items-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="20"
@@ -86,7 +86,7 @@ const Navbar: React.FC = () => {
           href="https://github.com/r4yfon"
           target="_blank"
           rel="noopener noreferrer"
-          className="px-2 py-1 flex gap-x-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 items-center">
+          className="px-3 py-2 flex gap-x-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 items-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="20"
@@ -110,7 +110,7 @@ const Navbar: React.FC = () => {
           href="mailto:srayfon93@gmail.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="px-2 py-1 flex gap-x-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 items-center">
+          className="px-3 py-2 flex gap-x-1 rounded-md dark:hover:bg-gray-200 bg-gray-800 hover:bg-gray-600 text-white dark:text-black dark:bg-sky-50  items-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="20"
@@ -198,12 +198,12 @@ const Navbar: React.FC = () => {
               <line x1="4" y1="21" x2="24" y2="21"></line>
             </svg>
           </PopoverTrigger>
-          <PopoverContent className="p-2 w-48">
+          <PopoverContent className="p-2 w-64 gap-2 flex flex-col">
             <a
               href="https://drive.google.com/file/d/1G8rrqlHVj8YadlK36a5bVON5DN93Tp1u/view?usp=sharing"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-2 py-1 flex gap-x-1 rounded-md hover:bg-gray-200 text-gray-500 dark:text-white dark:hover:bg-gray-600 items-center">
+              className="px-3 py-2 flex gap-x-1 rounded-md hover:bg-gray-200 text-gray-500 dark:text-white dark:hover:bg-gray-600 items-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -227,7 +227,7 @@ const Navbar: React.FC = () => {
               href="https://github.com/r4yfon"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-2 py-1 flex gap-x-1 rounded-md hover:bg-gray-200 text-gray-500 dark:text-white dark:hover:bg-gray-600 items-center">
+              className="px-3 py-2 flex gap-x-1 rounded-md hover:bg-gray-200 text-gray-500 dark:text-white dark:hover:bg-gray-600 items-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -249,7 +249,7 @@ const Navbar: React.FC = () => {
               href="mailto:srayfon93@gmail.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-2 py-1 flex gap-x-1 rounded-md hover:bg-gray-200 text-gray-500 dark:text-white dark:hover:bg-gray-600 items-center">
+              className="px-3 py-2 flex gap-x-1 rounded-md dark:hover:bg-gray-200 bg-gray-800 hover:bg-gray-600 text-white dark:text-black dark:bg-sky-50  items-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -269,7 +269,7 @@ const Navbar: React.FC = () => {
             </a>
             {/* Dark mode button */}
             <button
-              className="simple-dark-toggle px-2 py-1 me-3 md:me-0 flex gap-x-1 rounded-md w-full text-gray-500 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600"
+              className="simple-dark-toggle px-3 py-2 me-3 md:me-0 flex gap-x-1 rounded-md w-full text-gray-500 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600"
               aria-label="Toggle dark mode"
               type="button"
               id="mobile-dark-toggle"
