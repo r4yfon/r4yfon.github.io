@@ -1,11 +1,11 @@
 ---
 title: Freshsavings (Group)
 slug: freshsavings-group
-year: 2023
+date: 2023-09
 description: All-in-one platform to reduce food wastage in Singapore, originally a university group project.
 tags: [Vue 3, Bootstrap 5, Pinia, AWS RDS, MySQL]
-thumbnail: freshsavings-group-thumbnail.webp
-github: https://github.com/
+website: GitHub
+url: https://github.com/r4yfon/freshsavings
 ---
 
 Freshsavings is an all-in-one platform to reduce wastage of expired food in Singapore. Over the past 10 years, food waste has become one of the biggest waste streams and the amount generated has grown by 20%!
@@ -17,10 +17,6 @@ We aim to tackle the problem through a three-pronged approach:
 - **Inventory Tracker:** Keeps track of inventory at home and reminds users of food products that are soon to expire.
 - **Recipe Generator:** Recommends food recipes based on the user's list of items in Inventory Tracker.
 - **Marketplace:** Sell or purchase food products that are soon to expire at highly discounted prices.
-
-## Requirements
-
-- Node 16.15.0
 
 ## Tools Used
 
@@ -40,19 +36,6 @@ We aim to tackle the problem through a three-pronged approach:
 - [LottieFiles](https://lottiefiles.com/)
 - [Vueuse](https://vueuse.org/)
 - [Vue Router](https://router.vuejs.org/)
-
-## Description
-
-### Vue
-
-We used `VUE3 cli` for this project, allowing us to customize configuration. [Configuration Reference](https://cli.vuejs.org/config/).
-
-Most notable portions included the use of Vue Routers.
-We created `components` that were reused in various places and imported them where needed to streamline the application. Such components include NavBar and Footer.
-
-### Bootstrap & CSS
-
-We made use of the `12-point grid system` to help make our application responsive. We utilized Bootstrap features like `modal`, `accordion panel`, and styled our website using CSS and icons. We took ideas for our marketplace design from existing HTML templates such as [this](https://startbootstrap.com/template/shop-homepage).
 
 ## API Used
 
@@ -75,33 +58,6 @@ We used Amazon RDS as a managed relational database service for the MySQL server
 ### Animation Libraries
 
 We used Lottiefiles to incorporate lightweight SVG animation files.
-
-## Project Setup
-
-### Access project folder and download dependencies
-
-```sh
-cd freshsavings
-npm install
-```
-
-### Compiles and hot-reloads for development
-
-```sh
-npm run serve
-```
-
-### Compiles and minifies for production
-
-```sh
-npm run build
-```
-
-### Lints and fixes files
-
-```sh
-npm run lint
-```
 
 ## Log in with these credentials
 

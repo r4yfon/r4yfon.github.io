@@ -12,7 +12,7 @@ type project = {
   frontmatter: {
     slug: string;
     title: string;
-    year: string;
+    date: string;
     description: string;
     tags: [string];
   };
@@ -44,13 +44,13 @@ const WebProjects: React.FC = () => {
   const orientation = isSmall ? "horizontal" : "vertical";
   const webProjects = useStaticQuery(graphql`
     query {
-      allMdx(sort: { frontmatter: { year: DESC } }) {
+      allMdx(sort: { frontmatter: { date: DESC } }) {
         nodes {
           frontmatter {
             slug
             tags
             title
-            year
+            date
             description
           }
         }
@@ -100,7 +100,7 @@ const WebProjects: React.FC = () => {
                     {item.frontmatter.title}
                   </span>
                   <span className="text-sm ms-2 text-gray-500">
-                    {item.frontmatter.year}
+                    {item.frontmatter.date}
                   </span>
                   <p className="mt-2 text-gray-700 dark:text-gray-400">
                     {item.frontmatter.description}
@@ -117,7 +117,7 @@ const WebProjects: React.FC = () => {
                   </div>
                   {/* Show screenshot in carousel on mobile only */}
                   <img
-                    src={`${preview.src}`}
+                    src={`assets/${item.frontmatter.slug}/thumbnail.webp`}
                     alt={item.frontmatter.title}
                     className="block mt-4 rounded-lg w-full aspect-video object-cover md:hidden"
                   />

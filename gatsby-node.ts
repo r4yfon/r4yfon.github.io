@@ -23,13 +23,13 @@ export const createPages: GatsbyNode["createPages"] = async ({
   // Query MDX files
   const result = await graphql(`
     query {
-      allMdx(sort: { frontmatter: { year: DESC } }) {
+      allMdx(sort: { frontmatter: { date: DESC } }) {
         nodes {
           id
           frontmatter {
             slug
             title
-            year
+            date
           }
           internal {
             contentFilePath

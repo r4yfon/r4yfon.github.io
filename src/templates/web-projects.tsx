@@ -9,7 +9,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { graphql, Link } from "gatsby";
-import { ChevronLeft, ChevronRight, Globe } from "lucide-react";
+import { ChevronLeft, ChevronRight, CodeXml, Globe } from "lucide-react";
 import React from "react";
 
 interface WebProjectTemplateProps {
@@ -18,10 +18,11 @@ interface WebProjectTemplateProps {
       frontmatter: {
         title: string;
         tags: string[];
-        url?: string | null;
-        website?: string | null;
+        url: string;
+        website: string;
         description: string;
-        year: number;
+        date: string;
+        demo?: string;
       };
     };
     allFile: {
@@ -63,12 +64,20 @@ const WebProjectTemplate: React.FC<WebProjectTemplateProps> = ({
   return (
     <Layout>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-4 flex">
+          <Link
+            to="/"
+            className="px-3 py-2 hover:underline flex gap-x-2 items-center">
+            <ChevronLeft />
+            Back to home
+          </Link>
+        </div>
         {/* Header Section */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <h1 className="text-4xl font-bold">{frontmatter.title}</h1>
             <span className="text-lg text-gray-600 dark:text-gray-400">
-              {frontmatter.year}
+              {frontmatter.date}
             </span>
           </div>
 
@@ -89,14 +98,23 @@ const WebProjectTemplate: React.FC<WebProjectTemplateProps> = ({
 
           {/* Action Buttons */}
           <div className="flex gap-4">
-            {frontmatter.url && (
+            <Button asChild>
+              <a
+                href={frontmatter.url}
+                target="_blank"
+                rel="noopener noreferrer">
+                <CodeXml />
+                View on {frontmatter.website}
+              </a>
+            </Button>
+            {frontmatter.demo && (
               <Button asChild>
                 <a
-                  href={frontmatter.url}
+                  href={frontmatter.demo}
                   target="_blank"
                   rel="noopener noreferrer">
                   <Globe />
-                  View on {frontmatter.website}
+                  View Demo
                 </a>
               </Button>
             )}
@@ -107,6 +125,10 @@ const WebProjectTemplate: React.FC<WebProjectTemplateProps> = ({
         {images.length > 0 && (
           <div className="mb-8">
             <Carousel className="max-w-4xl mx-auto">
+              <div className="flex top-0 -translate-y-16 right-0 absolute mb-2 justify-end gap-x-2">
+                <CarouselPrevious className="static translate-0" />
+                <CarouselNext className="static translate-0" />
+              </div>
               <CarouselContent>
                 {images.map((media, index) => (
                   <CarouselItem key={index} className="content-center">
@@ -135,8 +157,6 @@ const WebProjectTemplate: React.FC<WebProjectTemplateProps> = ({
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
             </Carousel>
           </div>
         )}
@@ -196,7 +216,8 @@ export const query = graphql`
         url
         website
         description
-        year
+        date
+        demo
       }
     }
     allFile(
