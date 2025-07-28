@@ -1,3 +1,4 @@
+import AndroidProjects from "@/components/android-projects";
 import Hero from "@/components/hero";
 import WebProjects from "@/components/web-projects";
 import type { HeadFC } from "gatsby";
@@ -8,6 +9,7 @@ const IndexPage: React.FC = () => (
   <Layout>
     <Hero />
     <WebProjects />
+    <AndroidProjects />
   </Layout>
 );
 

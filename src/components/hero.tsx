@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { RESUME_URL } from "@/constants/urls";
 import React from "react";
 
 const Hero: React.FC = () => {
@@ -11,10 +12,10 @@ const Hero: React.FC = () => {
           </h3>
           <p className="text-lg sm:text-xl lg:text-2xl leading-relaxed text-gray-700 dark:text-gray-300 mb-8">
             I'm meticulous about detail and passionate about software
-            development, always keeping up with the latest trends and happenings
-            in tech. My fascination with technology began at age 8 when I
-            jailbroke my first iPhone, and that curiosity has driven me ever
-            since to explore, build, and create innovative solutions.
+            development and design. My fascination with technology began at age
+            8, when I jailbroke my first iPhone. That curiosity has driven me
+            ever since to explore, build, and create innovative solutions that
+            achieve both form and function.
           </p>
 
           <div className="flex flex-wrap gap-4">
@@ -36,14 +37,14 @@ const Hero: React.FC = () => {
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                   <path d="M22 6l-10 7L2 6"></path>
                   <title>Send me an email!</title>
-                </svg>{" "}
+                </svg>
                 Get in Touch
               </a>
             </Button>
 
             <Button asChild variant="outline" size="lg">
               <a
-                href="https://drive.google.com/file/d/1G8rrqlHVj8YadlK36a5bVON5DN93Tp1u/view?usp=sharing"
+                href={RESUME_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2">
@@ -63,7 +64,7 @@ const Hero: React.FC = () => {
                   <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-4 0v-9a2 2 0 0 1 2-2h2"></path>
                   <rect width="8" height="4" x="10" y="6" rx="1"></rect>
                   <title>View my resume!</title>
-                </svg>{" "}
+                </svg>
                 View Resume
               </a>
             </Button>

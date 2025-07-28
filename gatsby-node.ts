@@ -9,6 +9,7 @@ export const onCreateWebpackConfig: GatsbyNode["onCreateWebpackConfig"] = ({
       alias: {
         "@/components": path.resolve(__dirname, "src/components"),
         "@/lib": path.resolve(__dirname, "src/lib"),
+        "@/constants": path.resolve(__dirname, "src/constants"),
       },
     },
   });
@@ -43,7 +44,23 @@ export const createPages: GatsbyNode["createPages"] = async ({
     throw result.errors;
   }
 
-  const mdxNodes = result.data.allMdx.nodes;
+  const mdxNodes = (
+    result.data as {
+      allMdx: {
+        nodes: Array<{
+          id: string;
+          frontmatter: {
+            slug: string;
+            title: string;
+            date: string;
+          };
+          internal: {
+            contentFilePath: string;
+          };
+        }>;
+      };
+    }
+  ).allMdx.nodes;
 
   mdxNodes.forEach((node, index) => {
     if (node.frontmatter.slug) {
@@ -54,9 +71,9 @@ export const createPages: GatsbyNode["createPages"] = async ({
         index < mdxNodes.length - 1 ? mdxNodes[index + 1] : mdxNodes[0]; // Wrap to first
 
       createPage({
-        path: `/web-projects/${node.frontmatter.slug}`,
+        path: `/web-project/${node.frontmatter.slug}`,
         component: `${path.resolve(
-          "./src/pages/web-projects.tsx",
+          "./src/pages/web-project.tsx",
         )}?__contentFilePath=${node.internal.contentFilePath}`,
         context: {
           slug: node.frontmatter.slug,

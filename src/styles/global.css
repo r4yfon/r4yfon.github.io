@@ -154,3 +154,7 @@
 .font-caprasimo {
   font-family: "Caprasimo", sans-serif !important;
 }
+
+h2 {
+  @apply text-3xl font-bold mb-4;
+}

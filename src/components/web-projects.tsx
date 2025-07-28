@@ -43,8 +43,13 @@ const WebProjects: React.FC = () => {
   const isSmall = useMediaQuery("(max-width: 671px)");
   const orientation = isSmall ? "horizontal" : "vertical";
   const webProjects = useStaticQuery(graphql`
-    query {
-      allMdx(sort: { frontmatter: { date: DESC } }) {
+    {
+      allMdx(
+        sort: { frontmatter: { date: DESC } }
+        filter: {
+          internal: { contentFilePath: { regex: "/docs/web-projects/" } }
+        }
+      ) {
         nodes {
           frontmatter {
             slug
@@ -52,6 +57,9 @@ const WebProjects: React.FC = () => {
             title
             date
             description
+          }
+          internal {
+            contentFilePath
           }
         }
       }
@@ -62,7 +70,7 @@ const WebProjects: React.FC = () => {
     <section
       id="projects"
       className="my-12 container px-4 sm:px-6 lg:px-8 mx-auto">
-      <h2 className="text-3xl font-bold mb-4">Web Projects</h2>
+      <h2>Web Projects</h2>
       <div className="flex gap-10">
         {/* Carousel */}
         <Carousel orientation={orientation} className="!w-full md:!w-2/5">
@@ -94,7 +102,7 @@ const WebProjects: React.FC = () => {
                   })
                 }>
                 <Link
-                  to={`/web-projects/${item.frontmatter.slug}`}
+                  to={`/web-project/${item.frontmatter.slug}`}
                   className="block p-4 bg-gray-100 rounded-xl hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors min-w-[80vw] md:min-w-0">
                   <span className="text-xl font-semibold">
                     {item.frontmatter.title}

@@ -18,7 +18,14 @@ const config: GatsbyConfig = {
       resolve: "gatsby-source-filesystem",
       options: {
         name: "web-projects",
-        path: `${__dirname}/src/web-projects/`,
+        path: `${__dirname}/src/docs/web-projects/`,
+      },
+    },
+    {
+      resolve: "gatsby-source-filesystem",
+      options: {
+        name: "android-projects",
+        path: `${__dirname}/src/docs/android-projects/`,
       },
     },
     {

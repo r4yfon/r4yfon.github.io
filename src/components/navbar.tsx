@@ -1,3 +1,4 @@
+import { RESUME_URL } from "@/constants/urls";
 import React, { useEffect, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
@@ -57,7 +58,7 @@ const Navbar: React.FC = () => {
       <div className="hidden md:flex space-x-4 items-center">
         {/* Resume icon */}
         <a
-          href="https://drive.google.com/file/d/1G8rrqlHVj8YadlK36a5bVON5DN93Tp1u/view?usp=sharing"
+          href={RESUME_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="px-3 py-2 flex gap-x-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 items-center">
@@ -200,7 +201,7 @@ const Navbar: React.FC = () => {
           </PopoverTrigger>
           <PopoverContent className="p-2 w-64 gap-2 flex flex-col">
             <a
-              href="https://drive.google.com/file/d/1G8rrqlHVj8YadlK36a5bVON5DN93Tp1u/view?usp=sharing"
+              href={RESUME_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="px-3 py-2 flex gap-x-2 rounded-md hover:bg-gray-200 text-gray-500 dark:text-white dark:hover:bg-gray-600 items-center">
