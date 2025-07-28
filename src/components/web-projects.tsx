@@ -118,7 +118,7 @@ const WebProjects: React.FC = () => {
                       item.frontmatter.tags.map((tag: string) => (
                         <span
                           key={tag}
-                          className="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full dark:bg-blue-900 dark:text-blue-200">
+                          className="inline-block bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full dark:bg-blue-900 dark:text-blue-200">
                           {tag}
                         </span>
                       ))}

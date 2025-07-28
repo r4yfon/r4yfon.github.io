@@ -87,10 +87,10 @@ const WebProjectTemplate: React.FC<WebProjectTemplateProps> = ({
 
           {/* Tags */}
           <div className="flex flex-wrap gap-2 mb-6">
-            {frontmatter.tags.map((tag, index) => (
+            {frontmatter.tags.map((tag) => (
               <span
-                key={index}
-                className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm">
+                key={tag}
+                className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium  rounded-full dark:bg-blue-900 dark:text-blue-200">
                 {tag}
               </span>
             ))}
