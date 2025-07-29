@@ -18,7 +18,7 @@ const Hero: React.FC = () => {
             achieve both form and function.
           </p>
 
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-col md:flex-row gap-4 md:gap-8">
             <Button asChild size="lg">
               <a
                 href="mailto:srayfon93@gmail.com"

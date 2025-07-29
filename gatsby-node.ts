@@ -22,7 +22,7 @@ export const createPages: GatsbyNode["createPages"] = async ({
   const { createPage } = actions;
 
   // Query MDX files
-  const result = await graphql(`
+  const webProjectResults = await graphql(`
     query {
       allMdx(
         sort: { frontmatter: { date: DESC } }
@@ -45,12 +45,39 @@ export const createPages: GatsbyNode["createPages"] = async ({
     }
   `);
 
-  if (result.errors) {
-    throw result.errors;
+  const androidProjectResults = await graphql(`
+    query {
+      allMdx(
+        sort: { frontmatter: { date: DESC } }
+        filter: {
+          internal: { contentFilePath: { regex: "/docs/android-projects/" } }
+        }
+      ) {
+        nodes {
+          id
+          frontmatter {
+            slug
+            title
+            date
+          }
+          internal {
+            contentFilePath
+          }
+        }
+      }
+    }
+  `);
+
+  if (webProjectResults.errors) {
+    throw webProjectResults.errors;
   }
 
-  const mdxNodes = (
-    result.data as {
+  if (androidProjectResults.errors) {
+    throw androidProjectResults.errors;
+  }
+
+  const webProjectMdxNodes = (
+    webProjectResults.data as {
       allMdx: {
         nodes: Array<{
           id: string;
@@ -67,18 +94,72 @@ export const createPages: GatsbyNode["createPages"] = async ({
     }
   ).allMdx.nodes;
 
-  mdxNodes.forEach((node, index) => {
+  const androidProjectMdxNodes = (
+    androidProjectResults.data as {
+      allMdx: {
+        nodes: Array<{
+          id: string;
+          frontmatter: {
+            slug: string;
+            title: string;
+            date: string;
+          };
+          internal: {
+            contentFilePath: string;
+          };
+        }>;
+      };
+    }
+  ).allMdx.nodes;
+
+  webProjectMdxNodes.forEach((node, index) => {
     if (node.frontmatter.slug) {
       // Calculate previous and next projects
       const prevProject =
-        index > 0 ? mdxNodes[index - 1] : mdxNodes[mdxNodes.length - 1]; // Wrap to last
+        index > 0
+          ? webProjectMdxNodes[index - 1]
+          : webProjectMdxNodes[webProjectMdxNodes.length - 1]; // Wrap to last
       const nextProject =
-        index < mdxNodes.length - 1 ? mdxNodes[index + 1] : mdxNodes[0]; // Wrap to first
+        index < webProjectMdxNodes.length - 1
+          ? webProjectMdxNodes[index + 1]
+          : webProjectMdxNodes[0]; // Wrap to first
 
       createPage({
         path: `/web-project/${node.frontmatter.slug}`,
         component: `${path.resolve(
           "./src/templates/web-project.tsx",
+        )}?__contentFilePath=${node.internal.contentFilePath}`,
+        context: {
+          slug: node.frontmatter.slug,
+          prevProject: {
+            slug: prevProject.frontmatter.slug,
+            title: prevProject.frontmatter.title,
+          },
+          nextProject: {
+            slug: nextProject.frontmatter.slug,
+            title: nextProject.frontmatter.title,
+          },
+        },
+      });
+    }
+  });
+
+  androidProjectMdxNodes.forEach((node, index) => {
+    if (node.frontmatter.slug) {
+      // Calculate previous and next projects
+      const prevProject =
+        index > 0
+          ? androidProjectMdxNodes[index - 1]
+          : androidProjectMdxNodes[androidProjectMdxNodes.length - 1]; // Wrap to last
+      const nextProject =
+        index < androidProjectMdxNodes.length - 1
+          ? androidProjectMdxNodes[index + 1]
+          : androidProjectMdxNodes[0]; // Wrap to first
+
+      createPage({
+        path: `/android-project/${node.frontmatter.slug}`,
+        component: `${path.resolve(
+          "./src/templates/android-project.tsx",
         )}?__contentFilePath=${node.internal.contentFilePath}`,
         context: {
           slug: node.frontmatter.slug,

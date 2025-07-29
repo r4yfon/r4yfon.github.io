@@ -40,7 +40,7 @@ const WebProjects: React.FC = () => {
     src: "",
     title: "Hover over a project for a preview.",
   });
-  const isSmall = useMediaQuery("(max-width: 671px)");
+  const isSmall = useMediaQuery("(max-width: 1023px)");
   const orientation = isSmall ? "horizontal" : "vertical";
   const webProjects = useStaticQuery(graphql`
     {
@@ -73,8 +73,8 @@ const WebProjects: React.FC = () => {
       <h2>Web Projects</h2>
       <div className="flex gap-10">
         {/* Carousel */}
-        <Carousel orientation={orientation} className="!w-full md:!w-2/5">
-          <div className="flex top-0 -translate-y-12 right-0 absolute md:hidden mb-2 justify-end gap-x-2">
+        <Carousel orientation={orientation} className="!w-full lg:!w-2/5">
+          <div className="flex top-0 -translate-y-12 right-0 absolute lg:hidden mb-2 justify-end gap-x-2">
             <CarouselPrevious className="static translate-0" />
             <CarouselNext className="static translate-0" />
           </div>
@@ -103,7 +103,7 @@ const WebProjects: React.FC = () => {
                 }>
                 <Link
                   to={`/web-project/${item.frontmatter.slug}`}
-                  className="block p-4 bg-gray-100 rounded-xl hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors min-w-[80vw] md:min-w-0">
+                  className="block p-4 bg-gray-100 rounded-xl hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors min-w-[80vw] lg:min-w-0 hover:shadow-md">
                   <span className="text-xl font-semibold">
                     {item.frontmatter.title}
                   </span>
@@ -127,7 +127,7 @@ const WebProjects: React.FC = () => {
                   <img
                     src={`assets/${item.frontmatter.slug}/thumbnail.webp`}
                     alt={item.frontmatter.title}
-                    className="block mt-4 rounded-lg w-full aspect-video object-cover md:hidden"
+                    className="block mt-4 rounded-lg w-full aspect-video object-cover lg:hidden"
                   />
                 </Link>
               </CarouselItem>
@@ -136,7 +136,7 @@ const WebProjects: React.FC = () => {
         </Carousel>
 
         {/* Screenshot Preview (hidden on mobile, shown md+) */}
-        <div className="hidden md:flex flex-col w-3/5 items-center justify-center min-h-[450px]">
+        <div className="hidden lg:flex flex-col w-3/5 items-center justify-center min-h-[450px]">
           {preview.src ? (
             <>
               <img

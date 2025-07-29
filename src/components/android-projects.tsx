@@ -8,30 +8,6 @@ import {
 import { graphql, Link, useStaticQuery } from "gatsby";
 import React from "react";
 
-const projects = [
-  {
-    title: "Mobile Legends: Bang Bang",
-    category: "Action • Strategy",
-    rating: 3.8,
-    image: "/images/mlbb.jpg", // Replace with your actual image paths
-    url: "https://play.google.com/store/apps/details?id=com.mobile.legends",
-  },
-  {
-    title: "Free Fire MAX",
-    category: "Action • Tactical shooter",
-    rating: 4.5,
-    image: "/images/freefire.jpg",
-    url: "https://play.google.com/store/apps/details?id=com.dts.freefiremax",
-  },
-  {
-    title: "Clash Royale",
-    category: "Strategy • Tower defense",
-    rating: 3.9,
-    image: "/images/clashroyale.jpg",
-    url: "https://play.google.com/store/apps/details?id=com.supercell.clashroyale",
-  },
-];
-
 const AndroidProjects: React.FC = () => {
   const androidProjects = useStaticQuery(graphql`
     {
@@ -58,51 +34,50 @@ const AndroidProjects: React.FC = () => {
 
   return (
     <section className="py-12 container px-4 sm:px-6 lg:px-8 mx-auto">
-      <h2>Android Projects</h2>
-      <Carousel
-        className="relative"
-        opts={{
-          align: "start",
-          slidesToScroll: 1,
-          loop: false,
-        }}>
-        <CarouselContent
-          className="
-            [&>div]:transition-all
-            flex
-            ">
-          {androidProjects.map((project, idx) => (
-            <CarouselItem
-              key={project.title}
-              className="
+      <div className="flex flex-col lg:flex-row gap-2">
+        <div className="lg:flex-1/3 mb-8 lg:mb-0">
+          <h2>Android Projects</h2>
+          <p>
+            A collection of simple Android projects, created as part of a
+            university course to explore mobile app development concepts.
+          </p>
+        </div>
+        <Carousel className="relative lg:flex-2/3">
+          <div className="flex top-0 -translate-y-10 right-0 absolute lg:hidden mb-2 justify-end gap-x-2">
+            <CarouselPrevious className="static translate-0" />
+            <CarouselNext className="static translate-0" />
+          </div>
+          <CarouselContent className="flex">
+            {androidProjects.map((project) => (
+              <CarouselItem
+                key={project.title}
+                className="
                 basis-full
                 sm:basis-1/2
                 lg:basis-1/3
                 pr-6
-                "
-              style={{
-                minWidth: "0",
-              }}>
-              <Link
-                to={`/android-project/${project.frontmatter.slug}`}
-                className="block bg-gray-100 rounded-xl hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors">
-                {/* <img
-                  src={project.image}
-                  alt={project.title}
-                  className="w-full h-48 object-cover"
-                /> */}
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold mb-1">
+                ">
+                <Link
+                  to={`/android-project/${project.frontmatter.slug}`}
+                  className="relative block bg-gray-100 hover:bg-gray-200 rounded-3xl hover:shadow-md p-2 m-3 group">
+                  <img
+                    src={`assets/${project.frontmatter.slug}/logo.webp`}
+                    alt={`${project.frontmatter.title} app logo`}
+                    className="w-full h-48 object-cover aspect-square rounded-2xl inset-shadow-sm"
+                  />
+                  {/* <span className="pointer-events-none absolute inset-0 bg-black opacity-0 group-hover:opacity-10 rounded-2xl" /> */}
+                  {/* <div className="p-2"> */}
+                  <h3 className="text-lg font-semibold mb-1 p-2">
                     {project.frontmatter.title}
+                    <span className="text-sm ms-2 text-gray-500"></span>
                   </h3>
-                </div>
-              </Link>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
-      </Carousel>
+                  {/* </div> */}
+                </Link>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
+      </div>
     </section>
   );
 };
