@@ -68,14 +68,14 @@ const AndroidProjects: React.FC = () => {
                     className="w-full h-48 object-cover aspect-square rounded-lg inset-shadow-sm"
                   />
                   {/* <span className="pointer-events-none absolute inset-0 bg-black opacity-0 group-hover:opacity-10 rounded-2xl" /> */}
-                  {/* <div className="p-2"> */}
-                  <h3 className="text-lg font-semibold ms-2">
-                    {project.frontmatter.title}
-                  </h3>
-                  <span className="text-sm ms-2 text-gray-500">
-                    {project.frontmatter.date}
-                  </span>
-                  {/* </div> */}
+                  <div className="p-2">
+                    <h3 className="text-lg font-semibold">
+                      {project.frontmatter.title}
+                    </h3>
+                    <span className="text-sm text-gray-500">
+                      {project.frontmatter.date}
+                    </span>
+                  </div>
                 </Link>
               </CarouselItem>
             ))}
