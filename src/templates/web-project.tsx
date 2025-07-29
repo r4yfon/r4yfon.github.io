@@ -76,7 +76,7 @@ const WebProjectTemplate: React.FC<WebProjectTemplateProps> = ({
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <h1 className="text-4xl font-bold">{frontmatter.title}</h1>
-            <span className="text-lg text-gray-600 dark:text-gray-400">
+            <span className="text-gray-600 dark:text-gray-400">
               {frontmatter.date}
             </span>
           </div>

@@ -72,61 +72,57 @@ const AndroidProjectTemplate: React.FC<AndroidProjectTemplateProps> = ({
           </Link>
         </div>
         {/* Header Section */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
-            <h1 className="text-4xl font-bold">{frontmatter.title}</h1>
-            <span className="text-lg text-gray-600 dark:text-gray-400">
-              {frontmatter.date}
-            </span>
-          </div>
-
-          <p className="text-xl text-gray-700 dark:text-gray-300 mb-6">
-            {frontmatter.description}
-          </p>
-
-          {/* Tags */}
-          {/* <div className="flex flex-wrap gap-2 mb-6">
-            {frontmatter.tags.map((tag) => (
-              <span
-                key={tag}
-                className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium  rounded-full dark:bg-blue-900 dark:text-blue-200">
-                {tag}
+        <div className="flex mb-4 items-center">
+          <img
+            src={`/assets/${pageContext.slug}/logo.webp`}
+            alt={`${frontmatter.title} app logo`}
+            className="w-24 h-24 object-cover aspect-square rounded-lg border border-gray-800"
+          />
+          <div className="ms-4">
+            <div className="flex items-center gap-4 mb-4">
+              <h1 className="text-4xl font-bold">{frontmatter.title}</h1>
+              <span className="text-gray-600 dark:text-gray-400">
+                {frontmatter.date}
               </span>
-            ))}
-          </div> */}
+            </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-4">
-            {frontmatter.url && (
-              <Button asChild>
-                <a
-                  href={frontmatter.url}
-                  target="_blank"
-                  rel="noopener noreferrer">
-                  <CodeXml />
-                  View on {frontmatter.website}
-                </a>
-              </Button>
-            )}
-            {frontmatter.demo && (
-              <Button asChild>
-                <a
-                  href={frontmatter.demo}
-                  target="_blank"
-                  rel="noopener noreferrer">
-                  <Globe />
-                  View Site
-                </a>
-              </Button>
-            )}
+            <p className="text-xl text-gray-700 dark:text-gray-300">
+              {frontmatter.description}
+            </p>
           </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-4">
+          {frontmatter.url && (
+            <Button asChild>
+              <a
+                href={frontmatter.url}
+                target="_blank"
+                rel="noopener noreferrer">
+                <CodeXml />
+                View on {frontmatter.website}
+              </a>
+            </Button>
+          )}
+          {frontmatter.demo && (
+            <Button asChild>
+              <a
+                href={frontmatter.demo}
+                target="_blank"
+                rel="noopener noreferrer">
+                <Globe />
+                View Site
+              </a>
+            </Button>
+          )}
         </div>
 
         {/* Image/Video Carousel */}
         {images.length > 0 && (
           <div className="mb-8">
             <Carousel className="max-w-4xl mx-auto">
-              <div className="flex top-0 -translate-y-16 right-0 absolute mb-2 justify-end gap-x-2">
+              <div className="flex top-0 -translate-y-12 right-0 absolute mb-2 justify-end gap-x-2">
                 <CarouselPrevious className="static translate-0" />
                 <CarouselNext className="static translate-0" />
               </div>
