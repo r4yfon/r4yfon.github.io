@@ -170,7 +170,7 @@ const AndroidProjectTemplate: React.FC<AndroidProjectTemplateProps> = ({
               asChild
               variant="outline"
               className="flex items-center h-auto gap-2">
-              <Link to={`/web-projects/${prevProject.slug}`}>
+              <Link to={`/android-project/${prevProject.slug}`}>
                 <ChevronLeft className="h-4 w-4" />
                 <div className="text-left">
                   <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -185,7 +185,7 @@ const AndroidProjectTemplate: React.FC<AndroidProjectTemplateProps> = ({
               asChild
               variant="outline"
               className="flex items-center h-auto gap-2">
-              <Link to={`/web-projects/${nextProject.slug}`}>
+              <Link to={`/android-project/${nextProject.slug}`}>
                 <div className="text-right">
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     Next
