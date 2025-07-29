@@ -111,7 +111,7 @@ const Navbar: React.FC = () => {
           href="mailto:srayfon93@gmail.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="px-3 py-2 flex gap-x-2 rounded-md dark:hover:bg-gray-200 bg-gray-800 hover:bg-gray-600 text-white dark:text-black dark:bg-sky-50  items-center">
+          className="px-3 py-2 flex gap-x-2 rounded-md bg-logo-1 text-gray-800 hover:bg-logo-1/80 transition-color duration-200 items-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="20"
@@ -250,7 +250,7 @@ const Navbar: React.FC = () => {
               href="mailto:srayfon93@gmail.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-2 flex gap-x-2 rounded-md dark:hover:bg-gray-200 bg-gray-800 hover:bg-gray-600 text-white dark:text-black dark:bg-sky-50  items-center">
+              className="px-3 py-2 flex gap-x-2 rounded-md bg-logo-1 text-gray-800 hover:bg-logo-1/80 transition-color duration-200 items-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"

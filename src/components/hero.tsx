@@ -19,7 +19,10 @@ const Hero: React.FC = () => {
           </p>
 
           <div className="flex flex-col md:flex-row gap-4 md:gap-8">
-            <Button asChild size="lg">
+            <Button
+              asChild
+              size="lg"
+              className="bg-logo-1 text-black hover:bg-logo-1/80 transition-color duration-200">
               <a
                 href="mailto:srayfon93@gmail.com"
                 className="flex items-center gap-2">
