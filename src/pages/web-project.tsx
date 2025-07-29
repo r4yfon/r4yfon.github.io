@@ -23,6 +23,7 @@ interface WebProjectTemplateProps {
         description: string;
         date: string;
         demo?: string;
+        slug: string;
       };
     };
     allFile: {
@@ -220,6 +221,7 @@ export const query = graphql`
         description
         date
         demo
+        slug
       }
     }
     allFile(
