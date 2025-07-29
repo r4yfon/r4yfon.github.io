@@ -65,7 +65,7 @@ const AndroidProjects: React.FC = () => {
                   <img
                     src={`assets/${project.frontmatter.slug}/logo.webp`}
                     alt={`${project.frontmatter.title} app logo`}
-                    className="w-full h-48 object-cover aspect-square rounded-lg inset-shadow-sm"
+                    className="w-full h-48 object-contain aspect-square rounded-lg inset-shadow-sm"
                   />
                   <div className="p-2">
                     <h3 className="text-lg font-semibold">
