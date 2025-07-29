@@ -33,7 +33,9 @@ const AndroidProjects: React.FC = () => {
   `).allMdx.nodes;
 
   return (
-    <section className="py-12 container px-4 sm:px-6 lg:px-8 mx-auto">
+    <section
+      className="py-12 container px-4 sm:px-6 lg:px-8 mx-auto scroll-m-20"
+      id="android-projects">
       <div className="flex flex-col lg:flex-row gap-2">
         <div className="lg:flex-1/3 mb-8 lg:mb-0">
           <h2>Android Projects</h2>
@@ -59,18 +61,20 @@ const AndroidProjects: React.FC = () => {
                 ">
                 <Link
                   to={`/android-project/${project.frontmatter.slug}`}
-                  className="relative block bg-gray-100 hover:bg-gray-200 rounded-3xl hover:shadow-md p-2 m-3 group">
+                  className="relative block bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors rounded-xl hover:shadow-md p-2 mb-1 group">
                   <img
                     src={`assets/${project.frontmatter.slug}/logo.webp`}
                     alt={`${project.frontmatter.title} app logo`}
-                    className="w-full h-48 object-cover aspect-square rounded-2xl inset-shadow-sm"
+                    className="w-full h-48 object-cover aspect-square rounded-lg inset-shadow-sm"
                   />
                   {/* <span className="pointer-events-none absolute inset-0 bg-black opacity-0 group-hover:opacity-10 rounded-2xl" /> */}
                   {/* <div className="p-2"> */}
-                  <h3 className="text-lg font-semibold mb-1 p-2">
+                  <h3 className="text-lg font-semibold ms-2">
                     {project.frontmatter.title}
-                    <span className="text-sm ms-2 text-gray-500"></span>
                   </h3>
+                  <span className="text-sm ms-2 text-gray-500">
+                    {project.frontmatter.date}
+                  </span>
                   {/* </div> */}
                 </Link>
               </CarouselItem>

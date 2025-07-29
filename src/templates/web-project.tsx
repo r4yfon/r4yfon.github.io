@@ -66,7 +66,7 @@ const WebProjectTemplate: React.FC<WebProjectTemplateProps> = ({
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-4 flex">
           <Link
-            to="/"
+            to="/#web-projects"
             className="px-3 py-2 hover:underline flex gap-x-2 items-center">
             <ChevronLeft />
             Back to home

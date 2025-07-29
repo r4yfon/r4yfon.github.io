@@ -68,8 +68,8 @@ const WebProjects: React.FC = () => {
 
   return (
     <section
-      id="projects"
-      className="my-12 container px-4 sm:px-6 lg:px-8 mx-auto">
+      id="web-projects"
+      className="my-12 container px-4 sm:px-6 lg:px-8 mx-auto scroll-m-20">
       <h2>Web Projects</h2>
       <div className="flex gap-10">
         {/* Carousel */}
@@ -78,7 +78,7 @@ const WebProjects: React.FC = () => {
             <CarouselPrevious className="static translate-0" />
             <CarouselNext className="static translate-0" />
           </div>
-          <CarouselContent>
+          <CarouselContent className="mb-1">
             {webProjects.map((item: project) => (
               <CarouselItem
                 key={item.frontmatter.slug}
