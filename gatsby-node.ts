@@ -24,7 +24,10 @@ export const createPages: GatsbyNode["createPages"] = async ({
   // Query MDX files
   const result = await graphql(`
     query {
-      allMdx(sort: { frontmatter: { date: DESC } }) {
+      allMdx(
+        sort: { frontmatter: { date: DESC } }
+        filter: { fileAbsolutePath: { regex: "/docs/web-projects/" } }
+      ) {
         nodes {
           id
           frontmatter {
