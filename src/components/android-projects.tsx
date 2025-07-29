@@ -57,11 +57,11 @@ const AndroidProjects: React.FC = () => {
                 basis-full
                 sm:basis-1/2
                 lg:basis-1/3
-                pr-6
+                pr-6 mb-1
                 ">
                 <Link
                   to={`/android-project/${project.frontmatter.slug}`}
-                  className="relative block bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors rounded-xl hover:shadow-md p-2 mb-1 group">
+                  className="relative block bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors rounded-xl hover:shadow-md p-2 group">
                   <img
                     src={`assets/${project.frontmatter.slug}/logo.webp`}
                     alt={`${project.frontmatter.title} app logo`}
