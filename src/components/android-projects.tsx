@@ -67,7 +67,6 @@ const AndroidProjects: React.FC = () => {
                     alt={`${project.frontmatter.title} app logo`}
                     className="w-full h-48 object-cover aspect-square rounded-lg inset-shadow-sm"
                   />
-                  {/* <span className="pointer-events-none absolute inset-0 bg-black opacity-0 group-hover:opacity-10 rounded-2xl" /> */}
                   <div className="p-2">
                     <h3 className="text-lg font-semibold">
                       {project.frontmatter.title}
