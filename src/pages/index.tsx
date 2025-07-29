@@ -20,8 +20,8 @@ export const Head: HeadFC = () => (
     <title>Ray Fon Watson</title>
     <meta charSet="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta property="og:image" content="static/assets/social-banner.webp" />
-    <meta name="twitter:image" content="static/assets/social-banner.webp" />
+    <meta property="og:image" content="assets/social-banner.webp" />
+    <meta name="twitter:image" content="assets/social-banner.webp" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   </>
 );
