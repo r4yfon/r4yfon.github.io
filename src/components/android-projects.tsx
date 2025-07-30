@@ -8,6 +8,18 @@ import {
 import { graphql, Link, useStaticQuery } from "gatsby";
 import React from "react";
 
+type Project = {
+  frontmatter: {
+    slug: string;
+    title: string;
+    date: string;
+    description: string;
+  };
+  internal: {
+    contentFilePath: string;
+  };
+};
+
 const AndroidProjects: React.FC = () => {
   const androidProjects = useStaticQuery(graphql`
     {
@@ -40,8 +52,8 @@ const AndroidProjects: React.FC = () => {
         <div className="lg:flex-1/3 mb-8 lg:mb-0">
           <h2>Android Projects</h2>
           <p>
-            A collection of simple Android projects, created as part of a
-            university course to explore mobile app development concepts.
+            Simple Android projects, created as part of a university course to
+            explore mobile app development concepts.
           </p>
         </div>
         <Carousel className="relative lg:flex-2/3">
@@ -50,9 +62,9 @@ const AndroidProjects: React.FC = () => {
             <CarouselNext className="static translate-0" />
           </div>
           <CarouselContent className="flex">
-            {androidProjects.map((project) => (
+            {androidProjects.map((project: Project) => (
               <CarouselItem
-                key={project.title}
+                key={project.frontmatter.slug}
                 className="
                 basis-full
                 sm:basis-1/2
@@ -74,6 +86,7 @@ const AndroidProjects: React.FC = () => {
                     <span className="text-sm text-gray-500">
                       {project.frontmatter.date}
                     </span>
+                    <p className="mt-2">{project.frontmatter.description}</p>
                   </div>
                 </Link>
               </CarouselItem>

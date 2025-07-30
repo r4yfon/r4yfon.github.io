@@ -4,7 +4,7 @@ import React from "react";
 
 const Hero: React.FC = () => {
   return (
-    <section className="min-h-[70vh] flex items-center justify-center px-4 sm:px-6 lg:px-8">
+    <section className="min-h-[60vh] flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl w-full">
         <div className="text-left">
           <h3 className="text-2xl sm:text-3xl lg:text-4xl mb-4 font-caprasimo">
@@ -41,7 +41,7 @@ const Hero: React.FC = () => {
                   <path d="M22 6l-10 7L2 6"></path>
                   <title>Send me an email!</title>
                 </svg>
-                Get in Touch
+                Get in Touch!
               </a>
             </Button>
 
