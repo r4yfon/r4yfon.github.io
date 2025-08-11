@@ -53,6 +53,8 @@ const AndroidProjectTemplate: React.FC<AndroidProjectTemplateProps> = ({
 }) => {
   const { frontmatter } = data.mdx;
   const images = data.allFile.nodes;
+  const imagesNotThumbnail = images.filter((img) => !img.name.includes("logo"));
+  console.log(imagesNotThumbnail);
   const { prevProject, nextProject } = pageContext;
 
   // Helper function to determine if file is a video
@@ -119,7 +121,7 @@ const AndroidProjectTemplate: React.FC<AndroidProjectTemplateProps> = ({
         </div>
 
         {/* Image/Video Carousel */}
-        {images.length > 0 && (
+        {imagesNotThumbnail.length > 0 && (
           <div className="mb-8">
             <Carousel className="max-w-4xl mx-auto">
               <div className="flex top-0 -translate-y-12 right-0 absolute mb-2 justify-end gap-x-2">
@@ -127,7 +129,7 @@ const AndroidProjectTemplate: React.FC<AndroidProjectTemplateProps> = ({
                 <CarouselNext className="static translate-0" />
               </div>
               <CarouselContent>
-                {images.map((media, index) => (
+                {imagesNotThumbnail.map((media, index) => (
                   <CarouselItem key={index} className="content-center">
                     <div className="p-2">
                       {isVideo(media.extension) ? (

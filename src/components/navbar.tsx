@@ -52,7 +52,6 @@ const Navbar: React.FC = () => {
         className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2"
         href="/">
         <img src="/favicon.svg" alt="Logo" className="h-8 w-8 inline-block" />
-        Ray Fon Watson
       </a>
 
       <div className="hidden md:flex space-x-4 items-center">
