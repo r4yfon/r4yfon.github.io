@@ -40,7 +40,7 @@ const WebProjects: React.FC = () => {
     src: "",
     title: "Hover over a project for a preview.",
   });
-  const isSmall = useMediaQuery("(max-width: 1023px)");
+  const isSmall = useMediaQuery("(max-width: 64rem)");
   const orientation = isSmall ? "horizontal" : "vertical";
   const webProjects = useStaticQuery(graphql`
     {
@@ -103,7 +103,7 @@ const WebProjects: React.FC = () => {
                 }>
                 <Link
                   to={`/web-project/${item.frontmatter.slug}`}
-                  className="block p-4 bg-gray-100 rounded-xl hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors min-w-[80vw] lg:min-w-0 hover:shadow-md">
+                  className="block p-4 bg-gray-100 rounded-xl hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors lg:min-w-0 hover:shadow-md">
                   <span className="text-xl font-semibold">
                     {item.frontmatter.title}
                   </span>
