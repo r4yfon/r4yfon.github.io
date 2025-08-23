@@ -16,7 +16,7 @@ const Footer: React.FC = () => {
     <footer className="h-64 px-16 flex justify-between items-center inset-shadow-sm">
       <div>
         <img
-          src="assets/favicon.svg"
+          src="/assets/favicon.svg"
           alt="Favicon"
           className="opacity-75 h-24 w-24"
         />
