@@ -51,7 +51,7 @@ const Navbar: React.FC = () => {
       <a
         className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2"
         href="/">
-        <img src="assets/favicon.svg" alt="Logo" className="h-8 w-8 inline-block" />
+        <img src="/assets/favicon.svg" alt="Logo" className="h-8 w-8 inline-block" />
       </a>
 
       <div className="hidden md:flex space-x-4 items-center">
