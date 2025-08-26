@@ -11,11 +11,17 @@ const Hero: React.FC = () => {
             I'm Ray Fon
           </h3>
           <p className="text-lg sm:text-xl lg:text-2xl leading-relaxed text-gray-700 dark:text-gray-300 mb-8">
-            I'm meticulous about detail and passionate about software
-            development and design. My fascination with technology began at age
-            8, when I jailbroke my first iPhone. That curiosity has driven me
-            ever since to explore, build, and create innovative solutions that
-            achieve both form and function.
+            I am an undergraduate pursuing a Bachelor's degree in Information
+            Systems with a second major in Psychology, combining technical
+            expertise with a deep understanding of human behaviour. My passion
+            for technology began at just eight years old when I jailbroke my
+            first iPhone, sparking a lifelong curiosity for software development
+            and innovation. Since then, I have been self-driven in pursuing
+            personal projects that allow me to experiment with new tools,
+            frameworks, and best practices across development and design. With a
+            meticulous eye for detail, strong resilience, and a people-oriented
+            approach, I thrive at the intersection of technology and
+            problem-solving.
           </p>
 
           <div className="flex flex-col md:flex-row gap-4 md:gap-8">
