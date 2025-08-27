@@ -9,6 +9,11 @@ const footerLinks = [
   },
   { label: "GitHub", href: "https://github.com/r4yfon", target: "_blank" },
   { label: "Email", href: "mailto:srayfon93@gmail.com", target: "_blank" },
+  {
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/in/rayfon",
+    target: "_blank",
+  },
 ];
 
 const Footer: React.FC = () => {
