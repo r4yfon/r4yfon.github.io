@@ -15,13 +15,11 @@ const Hero: React.FC = () => {
             Systems with a second major in Psychology, combining technical
             expertise with a deep understanding of human behaviour. My passion
             for technology began at just eight years old when I jailbroke my
-            first iPhone, sparking a lifelong curiosity for software development
-            and innovation. Since then, I have been self-driven in pursuing
-            personal projects that allow me to experiment with new tools,
-            frameworks, and best practices across development and design. With a
-            meticulous eye for detail, strong resilience, and a people-oriented
-            approach, I thrive at the intersection of technology and
-            problem-solving.
+            first iPhone. Since then, I have been self-driven in pursuing
+            personal projects, experimenting with new tools, frameworks, and
+            best practices across development and design. With a meticulous eye
+            for detail, strong resilience, and a people-oriented approach, I
+            thrive at the intersection of technology and problem-solving.
           </p>
 
           <div className="flex flex-col md:flex-row gap-4 md:gap-8">
