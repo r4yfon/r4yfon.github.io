@@ -51,7 +51,11 @@ const Navbar: React.FC = () => {
       <a
         className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2"
         href="/">
-        <img src="/assets/favicon.svg" alt="Logo" className="h-8 w-8 inline-block" />
+        <img
+          src="/assets/favicon.svg"
+          alt="Logo"
+          className="h-8 w-8 inline-block"
+        />
       </a>
 
       <div className="hidden md:flex space-x-4 items-center">
@@ -127,6 +131,33 @@ const Navbar: React.FC = () => {
             <title>Send me an email!</title>
           </svg>
           Email
+        </a>
+
+        {/* LinkedIn icon */}
+        <a
+          href="https://www.linkedin.com/in/rayfon"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="px-3 py-2 flex gap-x-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 items-center">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="lucide lucide-linkedin-icon lucide-linkedin">
+            <rect x="2" y="2" width="20" height="20" rx="4"></rect>
+            <path d="M8 11v5"></path>
+            <path d="M8 8v.01"></path>
+            <path d="M12 16v-5"></path>
+            <path d="M16 16v-3a2 2 0 0 0-4 0"></path>
+            <title>View my LinkedIn profile!</title>
+          </svg>
+          LinkedIn
         </a>
 
         {/* Dark mode button */}
@@ -266,6 +297,31 @@ const Navbar: React.FC = () => {
                 <title>Send me an email!</title>
               </svg>
               Email
+            </a>
+            <a
+              href="https://www.linkedin.com/in/rayfon"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-2 flex gap-x-2 rounded-md hover:bg-gray-200 text-gray-500 dark:text-white dark:hover:bg-gray-600 items-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="lucide lucide-linkedin-icon lucide-linkedin">
+                <rect x="2" y="2" width="20" height="20" rx="4"></rect>
+                <path d="M8 11v5"></path>
+                <path d="M8 8v.01"></path>
+                <path d="M12 16v-5"></path>
+                <path d="M16 16v-3a2 2 0 0 0-4 0"></path>
+                <title>View my LinkedIn profile!</title>
+              </svg>
+              LinkedIn
             </a>
             {/* Dark mode button */}
             <button
