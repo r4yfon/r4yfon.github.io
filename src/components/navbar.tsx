@@ -1,4 +1,5 @@
 import { RESUME_URL } from "@/constants/urls";
+import { withPrefix } from "gatsby";
 import React, { useEffect, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
@@ -50,9 +51,9 @@ const Navbar: React.FC = () => {
     <nav className="px-4 sm:px-6 lg:px-8 mx-auto flex items-center justify-between py-3 sticky top-0 z-50 text-gray-500 dark:text-white bg-background/40 backdrop-blur-3xl backdrop-saturate-150 shadow-sm">
       <a
         className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2"
-        href="/">
+        href={withPrefix("/")}>
         <img
-          src="/assets/favicon.svg"
+          src={withPrefix("/assets/favicon.svg")}
           alt="Logo"
           className="h-8 w-8 inline-block"
         />

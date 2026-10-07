@@ -1,6 +1,8 @@
 import type { GatsbyConfig } from "gatsby";
 
 const config: GatsbyConfig = {
+  // archived at r4yfon.github.io/v2/ (build with `gatsby build --prefix-paths`)
+  pathPrefix: "/v2",
   siteMetadata: {
     title: `Ray Fon Watson`,
     siteUrl: `https://www.r4yfon.github.io`,

@@ -8,7 +8,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { graphql, Link } from "gatsby";
+import { graphql, Link, withPrefix } from "gatsby";
 import { ChevronLeft, ChevronRight, CodeXml, Globe } from "lucide-react";
 import React from "react";
 
@@ -76,7 +76,7 @@ const AndroidProjectTemplate: React.FC<AndroidProjectTemplateProps> = ({
         {/* Header Section */}
         <div className="flex mb-4 items-center">
           <img
-            src={`/assets/${pageContext.slug}/logo.webp`}
+            src={withPrefix(`/assets/${pageContext.slug}/logo.webp`)}
             alt={`${frontmatter.title} app logo`}
             className="w-24 h-24 object-cover aspect-square rounded-lg border border-gray-800"
           />

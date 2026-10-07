@@ -1,4 +1,5 @@
 import { RESUME_URL } from "@/constants/urls";
+import { withPrefix } from "gatsby";
 import React from "react";
 
 const footerLinks = [
@@ -21,7 +22,7 @@ const Footer: React.FC = () => {
     <footer className="h-64 px-16 flex justify-between items-center inset-shadow-sm">
       <div>
         <img
-          src="/assets/favicon.svg"
+          src={withPrefix("/assets/favicon.svg")}
           alt="Favicon"
           className="opacity-75 h-24 w-24"
         />
