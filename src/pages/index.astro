@@ -1,14 +1,15 @@
 ---
+import ArrowRight from "@lucide/astro/icons/arrow-right";
 import Changelog from "@/components/Changelog.astro";
 import CopyEmail from "@/components/CopyEmail.astro";
-import MobileDock from "@/components/MobileDock.astro";
+import Dock from "@/components/Dock.astro";
 import ProjectCard from "@/components/ProjectCard.astro";
 import ProjectThumb from "@/components/ProjectThumb.astro";
 import Section from "@/components/Section.astro";
 import SectionNav from "@/components/SectionNav.astro";
 import Sidebar from "@/components/Sidebar.astro";
 import Watermark from "@/components/Watermark.astro";
-import { experience, principles, site } from "@/data/site";
+import { about, experience, principles, site } from "@/data/site";
 import Base from "@/layouts/Base.astro";
 import { formatMonth, getProjects } from "@/lib/projects";
 
@@ -32,14 +33,8 @@ const sections = [
 
     <main class="grid min-w-0 gap-22 pb-32 lg:py-22">
       <Section id="about" label="About">
-        <div class="grid max-w-[62ch] gap-4 text-muted [&_strong]:font-medium [&_strong]:text-fg">
-          <p>
-            I'm an undergraduate in <strong>Information Systems</strong> with a second major in <strong>Psychology</strong>. One half of me asks <span class="bg-[linear-gradient(transparent_62%,color-mix(in_srgb,var(--peach)_32%,transparent)_0)] text-fg">why people do what they do</span>; the other half ships the feature that helps them do it.
-          </p>
-          <p>
-            It started at eight years old, when I jailbroke my first iPhone. Since then I've been building side projects across Vue, React, SvelteKit, Flask and Android. I still prototype ideas in Figma first, and I keep the user in the room when I'm deciding what to build.
-          </p>
-          <p>Right now I'm looking for <strong>[product / APM / fullstack]</strong> roles where I can own a problem from discovery to deploy.</p>
+        <div class="grid max-w-[62ch] gap-4 text-muted [&_mark]:bg-[linear-gradient(transparent_62%,color-mix(in_srgb,var(--peach)_32%,transparent)_0)] [&_mark]:bg-transparent [&_mark]:text-fg [&_strong]:font-medium [&_strong]:text-fg">
+          {about.map((paragraph) => <p set:html={paragraph} />)}
         </div>
         <div class="mt-5.5"><CopyEmail /></div>
       </Section>
@@ -114,7 +109,7 @@ const sections = [
         }
 
         <a class="group/gh mt-6 inline-flex items-center gap-2 px-5 font-medium" href={site.github} target="_blank" rel="noopener noreferrer">
-          See everything on GitHub <span class="spring text-peach transition-transform duration-450 group-hover/gh:translate-x-1.5">→</span>
+          See everything on GitHub <ArrowRight class="spring size-4 text-peach transition-transform duration-450 group-hover/gh:translate-x-1.5" aria-hidden="true" />
         </a>
       </Section>
 
@@ -135,5 +130,5 @@ const sections = [
     </main>
   </div>
   <SectionNav sections={sections} />
-  <MobileDock />
+  <Dock sections />
 </Base>

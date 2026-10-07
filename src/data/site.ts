@@ -14,6 +14,16 @@ export const site = {
   version: "3.0",
 };
 
+/**
+ * About section paragraphs. Inline HTML is allowed:
+ * <strong> for emphasis, <mark> for the peach highlighter.
+ */
+export const about = [
+  "I'm an undergraduate in <strong>Information Systems</strong> with a second major in <strong>Psychology</strong>. One half of me asks <mark>why people do what they do</mark>; the other half ships the feature that helps them do it.",
+  "It started at eight years old, when I jailbroke my first iPhone. Since then I've been building side projects across Vue, React, SvelteKit, Flask and Android. I still prototype ideas in Figma first, and I keep the user in the room when I'm deciding what to build.",
+  "Right now I'm looking for <strong>[product / APM / fullstack]</strong> roles where I can own a problem from discovery to deploy.",
+];
+
 export type ExperienceItem = {
   when: string;
   title: string;

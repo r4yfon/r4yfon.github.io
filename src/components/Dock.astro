@@ -1,13 +1,23 @@
 ---
 /**
- * Tablet/phone action bar. Below `lg` the sidebar (resume, socials) scrolls away with the top
- * of the page, so this dock slides up once that header has left the screen.
- * The ☰ button opens the same section sheet as the headings (SectionNav).
+ * Floating action bar (resume, email, socials). It slides up once the page's `[data-hero]`
+ * element has left the screen.
+ * - Home: tablet/phone only, since on desktop the sticky sidebar already holds these actions.
+ *   Its ☰ button opens the section sheet (SectionNav).
+ * - Project pages: every width, since there's no sidebar there.
  */
 import { site } from "@/data/site";
+
+interface Props {
+  /** show the ☰ button that opens the section sheet (needs <SectionNav /> on the page) */
+  sections?: boolean;
+  /** keep the dock on desktop too */
+  desktop?: boolean;
+}
+const { sections = false, desktop = false } = Astro.props;
 ---
 
-<nav class="dock" aria-label="Quick actions" data-shown="false" inert>
+<nav class:list={["dock", { "dock--desktop": desktop }]} aria-label="Quick actions" data-shown="false" inert>
   <a class="dock-resume" href={site.resume} target="_blank" rel="noopener noreferrer">
     Resume
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"></path></svg>
@@ -22,10 +32,16 @@ import { site } from "@/data/site";
   <a class="icon-btn dock-btn" href={site.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="4"></rect><path d="M8 11v5M8 8v.01M12 16v-5M16 16v-3a2 2 0 0 0-4 0"></path></svg>
   </a>
-  <span class="dock-sep" aria-hidden="true"></span>
-  <button class="icon-btn dock-btn" type="button" popovertarget="section-nav" aria-expanded="false" aria-label="Jump to section">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h13"></path></svg>
-  </button>
+  {
+    sections && (
+      <>
+        <span class="dock-sep" aria-hidden="true" />
+        <button class="icon-btn dock-btn" type="button" popovertarget="section-nav" aria-expanded="false" aria-label="Jump to section">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h13" /></svg>
+        </button>
+      </>
+    )
+  }
   <span class="sr-only" aria-live="polite" data-dock-status></span>
 </nav>
 
@@ -110,7 +126,7 @@ import { site } from "@/data/site";
   /* desktop keeps these actions in the sticky sidebar (set here, not with lg:hidden,
      because unlayered component CSS would beat the Tailwind utility) */
   @media (width >= 64rem) {
-    .dock { display: none; }
+    .dock:not(.dock--desktop) { display: none; }
   }
   @media (prefers-reduced-motion: reduce) {
     .dock { transition: opacity 0.15s ease; }

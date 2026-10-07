@@ -1,4 +1,5 @@
 ---
+import ArrowRight from "@lucide/astro/icons/arrow-right";
 import ProjectThumb from "@/components/ProjectThumb.astro";
 import { formatMonth, type Project } from "@/lib/projects";
 
@@ -22,7 +23,7 @@ const pdi = [
     <span class="font-mono text-xs/[1.9] font-medium tracking-[0.06em] text-muted uppercase">{formatMonth(data.date)} · {data.role}</span>
     <h3 class="text-[1.05rem] leading-snug font-semibold">
       <a href={`/projects/${id}/`} class="after:absolute after:inset-0 after:rounded-2xl">
-        <span class="inline-block" style={`view-transition-name: title-${id}; view-transition-class: project-title`}>{data.title}</span> <span class="spring inline-block text-peach transition-transform duration-450 group-hover/card:translate-x-1">→</span>
+        <span class="inline-block" style={`view-transition-name: title-${id}; view-transition-class: project-title`}>{data.title}</span> <ArrowRight class="spring inline-block size-4 align-[-2px] text-peach transition-transform duration-450 group-hover/card:translate-x-1" aria-hidden="true" />
       </a>
     </h3>
     {

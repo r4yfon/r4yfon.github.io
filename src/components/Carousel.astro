@@ -1,0 +1,119 @@
+---
+/**
+ * Screenshot carousel: a horizontal scroll-snap track, so swiping, trackpads and
+ * keyboard scrolling work natively. Prev/next buttons and the counter are layered on top.
+ * Each slide opens the full-size image in a new tab.
+ */
+import ChevronLeft from "@lucide/astro/icons/chevron-left";
+import ChevronRight from "@lucide/astro/icons/chevron-right";
+
+interface Props {
+  slides: { src: string; caption: string }[];
+  label: string;
+}
+const { slides, label } = Astro.props;
+const single = slides.length < 2;
+---
+
+<section class="carousel" aria-roledescription="carousel" aria-label={label}>
+  <ol class="track" tabindex="0" aria-label="Slides, scroll sideways for more">
+    {
+      slides.map((s, i) => (
+        <li class="slide" aria-roledescription="slide" aria-label={`${i + 1} of ${slides.length}: ${s.caption}`}>
+          <a href={s.src} target="_blank" rel="noopener noreferrer" class="block" aria-label={`Open full size: ${s.caption}`}>
+            <img src={s.src} alt={s.caption} loading={i === 0 ? "eager" : "lazy"} decoding="async" />
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+
+  <div class="controls" hidden={single}>
+    <p class="caption" aria-live="polite"><span class="count">1 / {slides.length}</span> · <span class="text">{slides[0]?.caption}</span></p>
+    <div class="flex gap-2">
+      <button class="icon-btn prev" type="button" aria-label="Previous screenshot" disabled><ChevronLeft /></button>
+      <button class="icon-btn next" type="button" aria-label="Next screenshot"><ChevronRight /></button>
+    </div>
+  </div>
+  {single && <p class="caption mt-2">{slides[0]?.caption}</p>}
+</section>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>(".carousel")) {
+    const track = root.querySelector<HTMLElement>(".track")!;
+    const slides = [...track.querySelectorAll<HTMLElement>(".slide")];
+    const prev = root.querySelector<HTMLButtonElement>(".prev")!;
+    const next = root.querySelector<HTMLButtonElement>(".next")!;
+    const count = root.querySelector(".count");
+    const text = root.querySelector(".text");
+    if (slides.length < 2) continue;
+
+    let current = 0;
+    const update = (i: number) => {
+      current = i;
+      prev.disabled = i === 0;
+      next.disabled = i === slides.length - 1;
+      if (count) count.textContent = `${i + 1} / ${slides.length}`;
+      if (text) text.textContent = slides[i].querySelector("img")!.alt;
+    };
+    const go = (i: number) => {
+      const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      track.scrollTo({ left: slides[i].offsetLeft - track.offsetLeft, behavior: reduce ? "instant" : "smooth" });
+    };
+    prev.addEventListener("click", () => go(Math.max(0, current - 1)));
+    next.addEventListener("click", () => go(Math.min(slides.length - 1, current + 1)));
+
+    // which slide is showing: native snap event where supported, IntersectionObserver otherwise
+    if ("onscrollsnapchange" in HTMLElement.prototype) {
+      track.addEventListener("scrollsnapchange", (e) => {
+        const target = (e as Event & { snapTargetInline: Element | null }).snapTargetInline;
+        const i = slides.indexOf(target as HTMLElement);
+        if (i >= 0) update(i);
+      });
+    } else {
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) if (entry.isIntersecting) update(slides.indexOf(entry.target as HTMLElement));
+        },
+        { root: track, threshold: 0.6 },
+      );
+      slides.forEach((s) => io.observe(s));
+    }
+  }
+</script>
+
+<style>
+  .track {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 100%;
+    gap: 12px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    border-radius: 14px;
+  }
+  .track::-webkit-scrollbar { display: none; }
+  .slide { scroll-snap-align: center; scroll-snap-stop: always; }
+  .slide img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    object-position: top;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--surface);
+  }
+  .controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 10px;
+  }
+  .controls[hidden] { display: none; }
+  .caption { min-width: 0; font: 12px/1.5 var(--font-mono); color: var(--muted); }
+  .count { color: var(--fg); }
+  .controls :global(button:disabled) { opacity: 0.35; pointer-events: none; }
+</style>
