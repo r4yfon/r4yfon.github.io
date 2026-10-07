@@ -11,6 +11,7 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@oddbird/popover-polyfill": "^0.7.3",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.3.6",
     "tailwindcss": "^4.3.3"

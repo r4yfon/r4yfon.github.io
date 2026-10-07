@@ -1,0 +1,105 @@
+---
+/**
+ * Below `lg` the sidebar's section list is hidden, so every section heading opens this
+ * bottom sheet instead (native popover: light dismiss, Esc, focus return for free).
+ */
+interface Props {
+  sections: { id: string; label: string }[];
+}
+const { sections } = Astro.props;
+---
+
+<nav id="section-nav" popover aria-label="Jump to section" data-toc class="lg:hidden">
+  <div class="mb-3 flex items-center justify-between">
+    <p class="eyebrow">Jump to</p>
+    <button
+      type="button"
+      popovertarget="section-nav"
+      popovertargetaction="hide"
+      class="icon-btn size-8 rounded-lg"
+      aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+    </button>
+  </div>
+  <ol class="grid gap-1">
+    {
+      sections.map((s, i) => (
+        <li>
+          <a
+            href={`#${s.id}`}
+            class="group/item flex items-center gap-3 rounded-xl px-3 py-3 text-lg font-medium text-muted hover:bg-chip hover:text-fg [&.active]:bg-chip [&.active]:text-fg">
+            <span class="w-6 font-mono text-xs text-muted">{String(i + 1).padStart(2, "0")}</span>
+            {s.label}
+            <span class="ml-auto size-2 rounded-full bg-peach opacity-0 group-[.active]/item:opacity-100" aria-hidden="true" />
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+</nav>
+
+<script>
+  if (!("popover" in HTMLElement.prototype)) import("@oddbird/popover-polyfill");
+
+  const sheet = document.getElementById("section-nav")!;
+  const smooth = matchMedia("(prefers-reduced-motion: no-preference)").matches;
+  // Closing a popover returns focus to its opener, which would scroll back to that heading.
+  // So close first, then jump and move focus to the target section without a second scroll.
+  sheet.querySelectorAll<HTMLAnchorElement>("a[href^='#']").forEach((a) =>
+    a.addEventListener("click", (e) => {
+      const target = document.querySelector<HTMLElement>(a.hash);
+      if (!target) return;
+      e.preventDefault();
+      sheet.hidePopover();
+      history.pushState(null, "", a.hash);
+      target.scrollIntoView({ behavior: smooth ? "smooth" : "instant", block: "start" });
+      target.setAttribute("tabindex", "-1");
+      target.focus({ preventScroll: true });
+    }),
+  );
+  // keep the triggers' aria-expanded in sync (the polyfill doesn't)
+  sheet.addEventListener("toggle", (e) => {
+    const open = (e as ToggleEvent).newState === "open";
+    document.querySelectorAll('[popovertarget="section-nav"]:not([popovertargetaction])').forEach((b) => b.setAttribute("aria-expanded", String(open)));
+  });
+</script>
+
+<style>
+  /* bottom sheet; entry animates via @starting-style, exit where `overlay` is supported */
+  #section-nav {
+    inset: auto 0 0;
+    width: min(100%, 32rem);
+    margin: 0 auto;
+    max-height: 80dvh;
+    overflow-y: auto;
+    padding: 18px 16px calc(18px + env(safe-area-inset-bottom, 0px));
+    border: 1px solid var(--line);
+    border-bottom: 0;
+    border-radius: 20px 20px 0 0;
+    background: var(--surface);
+    color: var(--fg);
+    box-shadow: 0 -20px 60px -20px rgb(0 0 0 / 0.5);
+    translate: 0 100%;
+    transition-property: translate, display, overlay;
+    transition-duration: 0.35s;
+    transition-timing-function: cubic-bezier(0.2, 0.9, 0.3, 1);
+    transition-behavior: allow-discrete;
+  }
+  #section-nav:is(:popover-open, .\:popover-open) {
+    translate: 0 0;
+    @starting-style { translate: 0 100%; }
+  }
+  #section-nav::backdrop {
+    background: rgb(5 8 15 / 0);
+    transition-property: background-color, display, overlay;
+    transition-duration: 0.35s;
+    transition-behavior: allow-discrete;
+  }
+  #section-nav:popover-open::backdrop {
+    background: rgb(5 8 15 / 0.55);
+    @starting-style { background: rgb(5 8 15 / 0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #section-nav, #section-nav::backdrop { transition-duration: 0.01s; }
+  }
+</style>

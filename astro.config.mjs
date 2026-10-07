@@ -15,9 +15,9 @@ export default defineConfig({
       fallbacks: ["Cooper Black", "Georgia", "serif"],
     },
     {
-      provider: fontProviders.fontsource(),
-      name: "Geist",
-      cssVariable: "--font-geist",
+      provider: fontProviders.google(),
+      name: "Sora",
+      cssVariable: "--font-sora",
       weights: [400, 500, 600],
       fallbacks: ["ui-sans-serif", "system-ui", "sans-serif"],
     },

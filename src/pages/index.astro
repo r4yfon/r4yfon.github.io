@@ -4,6 +4,7 @@ import CopyEmail from "@/components/CopyEmail.astro";
 import ProjectCard from "@/components/ProjectCard.astro";
 import ProjectThumb from "@/components/ProjectThumb.astro";
 import Section from "@/components/Section.astro";
+import SectionNav from "@/components/SectionNav.astro";
 import Sidebar from "@/components/Sidebar.astro";
 import { experience, principles, site } from "@/data/site";
 import Base from "@/layouts/Base.astro";
@@ -130,4 +131,5 @@ const sections = [
       <Changelog />
     </main>
   </div>
+  <SectionNav sections={sections} />
 </Base>

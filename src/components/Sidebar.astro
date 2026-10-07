@@ -21,7 +21,7 @@ const { sections } = Astro.props;
     </p>
     <p class="mt-3.5 max-w-[34ch] text-muted">{site.pitch}</p>
 
-    <nav class="toc mt-12 hidden lg:block" aria-label="Sections">
+    <nav class="toc mt-12 hidden lg:block" aria-label="Sections" data-toc>
       <ol class="grid gap-1">
         {
           sections.map((s, i) => (
@@ -61,9 +61,10 @@ const { sections } = Astro.props;
 </header>
 
 <script>
-  // highlight the section currently in view
-  const links = [...document.querySelectorAll<HTMLAnchorElement>("nav.toc a")];
-  const sections = links.map((a) => document.querySelector<HTMLElement>(a.hash)!);
+  // highlight the section currently in view, in every section list (sidebar + mobile sheet)
+  const links = [...document.querySelectorAll<HTMLAnchorElement>("[data-toc] a[href^='#']")];
+  const ids = [...new Set(links.map((a) => a.hash))];
+  const sections = ids.map((id) => document.querySelector<HTMLElement>(id)!);
   const spy = () => {
     const line = innerHeight * 0.35;
     let idx = 0;
@@ -71,7 +72,12 @@ const { sections } = Astro.props;
       if (s.getBoundingClientRect().top - line <= 0) idx = i;
     });
     if (innerHeight + scrollY >= document.body.scrollHeight - 4) idx = sections.length - 1;
-    links.forEach((a, i) => a.classList.toggle("active", i === idx));
+    links.forEach((a) => {
+      const on = a.hash === ids[idx];
+      a.classList.toggle("active", on);
+      if (on) a.setAttribute("aria-current", "location");
+      else a.removeAttribute("aria-current");
+    });
   };
   addEventListener("scroll", spy, { passive: true });
   spy();
