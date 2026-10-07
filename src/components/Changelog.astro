@@ -3,9 +3,9 @@
 import { changelog, site } from "@/data/site";
 ---
 
-<footer class="grid max-w-[52ch] gap-2.5 text-[0.88rem] text-muted">
-  <details class="group/log">
-    <summary class="inline-flex w-fit cursor-pointer list-none items-center gap-2 rounded-full bg-chip px-2.5 py-1.5 font-mono text-xs font-medium text-chip-fg [&::-webkit-details-marker]:hidden">
+<footer class="flex justify-end text-[0.88rem] text-muted">
+  <details class="group/log max-w-full">
+    <summary class="ml-auto flex w-fit cursor-pointer list-none items-center gap-2 rounded-full bg-chip px-2.5 py-1.5 font-mono text-xs font-medium text-chip-fg [&::-webkit-details-marker]:hidden">
       <span class="size-1.75 rounded-full bg-[#5fd38d] shadow-[0_0_0_3px_rgb(95_211_141/0.2)]"></span>
       v{site.version} · changelog
       <span class="transition-transform group-open/log:rotate-90">›</span>
@@ -22,5 +22,4 @@ import { changelog, site } from "@/data/site";
       }
     </ol>
   </details>
-  <p>Built with Astro and Tailwind, hosted on GitHub Pages. Set in Caprasimo, Sora and Geist Mono.</p>
 </footer>

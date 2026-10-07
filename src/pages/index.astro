@@ -1,6 +1,7 @@
 ---
 import Changelog from "@/components/Changelog.astro";
 import CopyEmail from "@/components/CopyEmail.astro";
+import MobileDock from "@/components/MobileDock.astro";
 import ProjectCard from "@/components/ProjectCard.astro";
 import ProjectThumb from "@/components/ProjectThumb.astro";
 import Section from "@/components/Section.astro";
@@ -29,7 +30,7 @@ const sections = [
   <div class="relative z-1 mx-auto grid max-w-295 gap-6 px-[clamp(16px,5vw,64px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-16">
     <Sidebar sections={sections} />
 
-    <main class="grid min-w-0 gap-22 pb-16 lg:py-22">
+    <main class="grid min-w-0 gap-22 pb-32 lg:py-22">
       <Section id="about" label="About">
         <div class="grid max-w-[62ch] gap-4 text-muted [&_strong]:font-medium [&_strong]:text-fg">
           <p>
@@ -134,4 +135,5 @@ const sections = [
     </main>
   </div>
   <SectionNav sections={sections} />
+  <MobileDock />
 </Base>

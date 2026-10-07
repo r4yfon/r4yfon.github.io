@@ -10,11 +10,11 @@ interface Props {
 const { sections } = Astro.props;
 ---
 
-<header class="flex flex-col gap-7 pt-14 pb-6 lg:sticky lg:top-0 lg:h-dvh lg:justify-between lg:py-22">
+<header data-hero class="flex flex-col gap-7 pt-14 pb-6 lg:sticky lg:top-0 lg:h-dvh lg:justify-between lg:py-22">
   <div>
     <Logo every={10} />
-    <h1 class="group/name mt-4.5 mb-2.5 font-display text-[clamp(2.6rem,5vw,3.6rem)] leading-[1.02] tracking-[-0.01em]">
-      {site.name} <span class="wave inline-block origin-[70%_80%]">👋</span>
+    <h1 class="mt-4.5 mb-2.5 font-display text-[clamp(2.6rem,5vw,3.6rem)] leading-[1.02] tracking-[-0.01em]">
+      {site.name} <span aria-hidden="true">👋</span>
     </h1>
     <p class="text-lg font-medium">
       {site.roles[0]} <span class="px-1 font-mono text-peach">×</span> {site.roles[1]}
@@ -83,14 +83,3 @@ const { sections } = Astro.props;
   spy();
 </script>
 
-<style>
-  @media (prefers-reduced-motion: no-preference) {
-    .group\/name:hover .wave { animation: wave 1s ease-in-out; }
-  }
-  @keyframes wave {
-    20% { rotate: 14deg; }
-    40% { rotate: -8deg; }
-    60% { rotate: 12deg; }
-    80% { rotate: -4deg; }
-  }
-</style>
