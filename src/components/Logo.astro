@@ -10,8 +10,10 @@ interface Props {
   intro?: boolean;
   /** render as a link (e.g. home) instead of a button */
   href?: string;
+  /** replay R → F → </> roughly every N seconds while it's on screen (0 = never) */
+  every?: number;
 }
-const { size = 52, intro = true, href } = Astro.props;
+const { size = 52, intro = true, href, every = 0 } = Astro.props;
 const Tag = href ? "a" : "button";
 ---
 
@@ -21,6 +23,7 @@ const Tag = href ? "a" : "button";
   type={href ? undefined : "button"}
   aria-label={href ? "Ray Fon, home" : "Ray Fon logo"}
   data-intro={String(intro)}
+  data-every={every}
   style={`--size:${size}px`}>
   <span class="logo" aria-hidden="true"><span class="stem"></span><span class="bowl"></span><span class="tail"></span></span>
 </Tag>
@@ -72,8 +75,29 @@ const Tag = href ? "a" : "button";
     }
 
     if (!reduce && mark.dataset.intro === "true") setTimeout(() => play(["is-f", "is-code", ""], 450), 900);
-    const enter = () => play(reduce ? ["is-code"] : ["is-f", "is-code"], 60);
-    const leave = () => play([""]);
+    let hovering = false;
+    const enter = () => {
+      hovering = true;
+      play(reduce ? ["is-code"] : ["is-f", "is-code"], 60);
+    };
+    const leave = () => {
+      hovering = false;
+      play([""]);
+    };
+
+    // Idle replay. Skipped while hidden, off-screen or hovered, so it only costs ~1s of
+    // repainting a tiny box every N seconds, and nothing at all when nobody can see it.
+    const every = Number(mark.dataset.every) * 1000;
+    if (every > 0 && !reduce) {
+      let onScreen = true;
+      new IntersectionObserver(([entry]) => (onScreen = entry.isIntersecting)).observe(mark);
+      const tick = () =>
+        setTimeout(async () => {
+          if (onScreen && !hovering && !document.hidden) await play(["is-f", "is-code", ""], 450);
+          tick();
+        }, every * (0.85 + Math.random() * 0.3)); // a little jitter so it feels alive, not mechanical
+      setTimeout(tick, 900 + 2500); // start after the intro has played
+    }
     mark.addEventListener("pointerenter", enter);
     mark.addEventListener("pointerleave", leave);
     mark.addEventListener("focus", enter);

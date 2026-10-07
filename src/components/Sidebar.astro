@@ -12,7 +12,7 @@ const { sections } = Astro.props;
 
 <header class="flex flex-col gap-7 pt-14 pb-6 lg:sticky lg:top-0 lg:h-dvh lg:justify-between lg:py-22">
   <div>
-    <Logo />
+    <Logo every={10} />
     <h1 class="group/name mt-4.5 mb-2.5 font-display text-[clamp(2.6rem,5vw,3.6rem)] leading-[1.02] tracking-[-0.01em]">
       {site.name} <span class="wave inline-block origin-[70%_80%]">👋</span>
     </h1>

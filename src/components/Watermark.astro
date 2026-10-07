@@ -1,0 +1,47 @@
+---
+/**
+ * A large, faint RF monogram fixed behind the content. Purely decorative.
+ * It fades in over the first screen of scrolling with a scroll-driven animation
+ * (compositor-only `opacity`/`scale`). Browsers without support just show it faintly.
+ */
+---
+
+<svg class="watermark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+  <g fill="#75A6F1"><path d="M0 0h9.28v32H0z"></path><path d="M8.96 18.56h10.88L31.36 32H20.48z"></path></g>
+  <path fill="#D9AD84" d="M5.76 0H20a10.5 10.5 0 0 1 0 21H5.76z"></path>
+</svg>
+
+<style>
+  .watermark {
+    --wm-opacity: 0.045;
+    position: fixed;
+    right: -6vmin;
+    bottom: -8vmin;
+    z-index: 0;
+    width: min(62vmin, 560px);
+    height: auto;
+    pointer-events: none;
+    rotate: -8deg;
+    opacity: var(--wm-opacity);
+  }
+  :global([data-mode="light"]) .watermark { --wm-opacity: 0.07; }
+
+  @supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
+    @media (prefers-reduced-motion: no-preference) {
+      /* longhands on purpose: the minifier would fold a timeline into the `animation`
+         shorthand, which browsers don't accept yet */
+      .watermark {
+        animation-name: watermark-in;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-duration: auto;
+        animation-timeline: scroll(root block);
+        animation-range: 0 80vh;
+      }
+    }
+  }
+  @keyframes watermark-in {
+    from { opacity: 0; scale: 0.92; }
+    to { opacity: var(--wm-opacity); scale: 1; }
+  }
+</style>
