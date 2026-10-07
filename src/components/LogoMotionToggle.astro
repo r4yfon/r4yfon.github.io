@@ -1,0 +1,61 @@
+---
+/**
+ * Pause / play for the monogram's automatic animation (the intro and the idle replay).
+ * Hovering the logo still morphs it, since that's something the visitor chose to do.
+ * Stored in localStorage; Base.astro applies it before first paint as <html data-logo-motion="paused">.
+ */
+import Pause from "@lucide/astro/icons/pause";
+import Play from "@lucide/astro/icons/play";
+---
+
+<button class="motion-btn" type="button" aria-pressed="false" aria-label="Pause logo animation" title="Pause logo animation">
+  <Pause class="i-pause" aria-hidden="true" />
+  <Play class="i-play" aria-hidden="true" />
+</button>
+
+<script>
+  import { blip } from "@/scripts/sound";
+
+  const root = document.documentElement;
+  const paint = (btn: HTMLButtonElement) => {
+    const paused = root.dataset.logoMotion === "paused";
+    const label = paused ? "Play logo animation" : "Pause logo animation";
+    btn.setAttribute("aria-pressed", String(paused));
+    btn.setAttribute("aria-label", label);
+    btn.title = label;
+  };
+
+  for (const btn of document.querySelectorAll<HTMLButtonElement>(".motion-btn")) {
+    paint(btn);
+    btn.addEventListener("click", () => {
+      const paused = root.dataset.logoMotion !== "paused";
+      if (paused) root.dataset.logoMotion = "paused";
+      else delete root.dataset.logoMotion;
+      try { localStorage.setItem("rf-logo-motion", paused ? "paused" : "playing"); } catch {}
+      document.dispatchEvent(new CustomEvent("rf:logo-motion", { detail: { paused } }));
+      paint(btn);
+      blip(paused ? 300 : 700);
+    });
+  }
+</script>
+
+<style>
+  .motion-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: var(--muted);
+    opacity: 0.55;
+    cursor: pointer;
+    transition: opacity 0.2s, color 0.2s, border-color 0.2s;
+  }
+  .motion-btn:hover, .motion-btn:focus-visible { opacity: 1; color: var(--fg); border-color: var(--line); }
+  .motion-btn :global(svg) { width: 14px; height: 14px; }
+  .i-play { display: none; }
+  [aria-pressed="true"] .i-pause { display: none; }
+  [aria-pressed="true"] .i-play { display: block; }
+  [aria-pressed="true"] { opacity: 0.8; }
+</style>

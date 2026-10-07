@@ -52,6 +52,7 @@ const speculationRules = JSON.stringify({
         let saved = null;
         try { saved = localStorage.getItem("rf-theme"); } catch {}
         if (saved) root.dataset.theme = saved;
+        try { if (localStorage.getItem("rf-logo-motion") === "paused") root.dataset.logoMotion = "paused"; } catch {}
         const mq = matchMedia("(prefers-color-scheme: dark)");
         const sync = () => { root.dataset.mode = root.dataset.theme || (mq.matches ? "dark" : "light"); };
         sync();

@@ -1,5 +1,6 @@
 ---
 import Logo from "@/components/Logo.astro";
+import LogoMotionToggle from "@/components/LogoMotionToggle.astro";
 import SoundToggle from "@/components/SoundToggle.astro";
 import ThemeToggle from "@/components/ThemeToggle.astro";
 import { site } from "@/data/site";
@@ -12,7 +13,10 @@ const { sections } = Astro.props;
 
 <header data-hero class="flex flex-col gap-7 pt-14 pb-6 lg:sticky lg:top-0 lg:h-dvh lg:justify-between lg:py-22">
   <div>
-    <Logo every={10} />
+    <div class="flex items-end gap-1.5">
+      <Logo every={10} />
+      <LogoMotionToggle />
+    </div>
     <h1 class="mt-4.5 mb-2.5 font-display text-[clamp(2.6rem,5vw,3.6rem)] leading-[1.02] tracking-[-0.01em]">
       {site.name} <span aria-hidden="true">👋</span>
     </h1>

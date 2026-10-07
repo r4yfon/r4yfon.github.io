@@ -74,8 +74,12 @@ const Tag = href ? "a" : "button";
       }
     }
 
-    if (!reduce && mark.dataset.intro === "true") setTimeout(() => play(["is-f", "is-code", ""], 450), 900);
     let hovering = false;
+    // automatic motion can be paused by the visitor (LogoMotionToggle → <html data-logo-motion="paused">)
+    const autoPaused = () => document.documentElement.dataset.logoMotion === "paused";
+    document.addEventListener("rf:logo-motion", () => { if (autoPaused() && !hovering) play([""]); });
+
+    if (!reduce && mark.dataset.intro === "true") setTimeout(() => !autoPaused() && play(["is-f", "is-code", ""], 450), 900);
     const enter = () => {
       hovering = true;
       play(reduce ? ["is-code"] : ["is-f", "is-code"], 60);
@@ -93,7 +97,7 @@ const Tag = href ? "a" : "button";
       new IntersectionObserver(([entry]) => (onScreen = entry.isIntersecting)).observe(mark);
       const tick = () =>
         setTimeout(async () => {
-          if (onScreen && !hovering && !document.hidden) await play(["is-f", "is-code", ""], 450);
+          if (onScreen && !hovering && !document.hidden && !autoPaused()) await play(["is-f", "is-code", ""], 450);
           tick();
         }, every * (0.85 + Math.random() * 0.3)); // a little jitter so it feels alive, not mechanical
       setTimeout(tick, 900 + 2500); // start after the intro has played

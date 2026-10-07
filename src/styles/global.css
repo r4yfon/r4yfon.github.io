@@ -57,6 +57,10 @@
 
 /* ---------- base ---------- */
 @layer base {
+  /* Always reserve the scrollbar's space. Without this, a page captured before it's tall
+     enough to scroll has no scrollbar, its viewport is ~15px wider than the page it came
+     from (Windows), and Chrome skips the cross-document view transition. */
+  html { scrollbar-gutter: stable; }
   body {
     @apply bg-bg font-sans text-base/relaxed text-fg antialiased;
     transition: background-color 0.4s ease, color 0.4s ease;
