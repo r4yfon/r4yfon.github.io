@@ -4,7 +4,8 @@
  * element has left the screen.
  * - Home: tablet/phone only, since on desktop the sticky sidebar already holds these actions.
  *   Its ☰ button opens the section sheet (SectionNav).
- * - Project pages: every width, since there's no sidebar there.
+ * - Project pages: every width, since there's no sidebar there; on tablet/phone it's
+ *   pinned (visible from the start) rather than waiting for a scroll.
  */
 import { site } from "@/data/site";
 
@@ -13,11 +14,13 @@ interface Props {
   sections?: boolean;
   /** keep the dock on desktop too */
   desktop?: boolean;
+  /** below `lg`, show it immediately instead of after the hero scrolls away */
+  pinnedOnSmall?: boolean;
 }
-const { sections = false, desktop = false } = Astro.props;
+const { sections = false, desktop = false, pinnedOnSmall = false } = Astro.props;
 ---
 
-<nav class:list={["dock", { "dock--desktop": desktop }]} aria-label="Quick actions" data-shown="false" inert>
+<nav class:list={["dock", { "dock--desktop": desktop }]} aria-label="Quick actions" data-shown="false" data-pinned-small={pinnedOnSmall ? "" : undefined} inert>
   <a class="dock-resume" href={site.resume} target="_blank" rel="noopener noreferrer">
     Resume
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"></path></svg>
@@ -52,12 +55,23 @@ const { sections = false, desktop = false } = Astro.props;
   const hero = document.querySelector("[data-hero]");
   const status = dock.querySelector<HTMLElement>("[data-dock-status]")!;
 
-  // show once the hero (name + sidebar actions) is out of view; inert while hidden so it can't be tabbed to
-  const setShown = (shown: boolean) => {
+  // show once the hero (name + sidebar actions) is out of view, or straight away on small screens
+  // when pinned; inert while hidden so it can't be tabbed to
+  const small = matchMedia("(width < 64rem)");
+  const pinned = dock.hasAttribute("data-pinned-small");
+  let heroGone = !hero;
+  const update = () => {
+    const shown = heroGone || (pinned && small.matches);
     dock.dataset.shown = String(shown);
     dock.inert = !shown;
   };
-  if (hero) new IntersectionObserver(([entry]) => setShown(!entry.isIntersecting)).observe(hero);
+  if (hero)
+    new IntersectionObserver(([entry]) => {
+      heroGone = !entry.isIntersecting;
+      update();
+    }).observe(hero);
+  small.addEventListener("change", update);
+  update();
 
   const email = dock.querySelector<HTMLButtonElement>(".dock-email")!;
   email.addEventListener("click", async () => {
