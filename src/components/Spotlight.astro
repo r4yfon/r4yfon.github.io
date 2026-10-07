@@ -1,0 +1,26 @@
+<div class="spotlight" aria-hidden="true"></div>
+
+<script>
+  const spot = document.querySelector<HTMLElement>(".spotlight")!;
+  addEventListener(
+    "pointermove",
+    (e) => {
+      spot.style.setProperty("--mx", `${e.clientX}px`);
+      spot.style.setProperty("--my", `${e.clientY}px`);
+    },
+    { passive: true },
+  );
+</script>
+
+<style>
+  .spotlight {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: radial-gradient(520px circle at var(--mx, 30%) var(--my, 20%), var(--glow), transparent 70%);
+  }
+  @media (prefers-reduced-motion: reduce), (pointer: coarse) {
+    .spotlight { display: none; }
+  }
+</style>

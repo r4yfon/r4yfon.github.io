@@ -1,0 +1,29 @@
+---
+title: "WeatherDroid"
+slug: weatherdroid
+date: "2025-06"
+description: "A weather app for Android devices made with Kotlin, Jetpack Compose, and OpenMeteo's API."
+kind: android
+role: "Solo"
+tags: [Kotlin, Jetpack Compose, Retrofit]
+repo: https://github.com/r4yfon/weatherdroid
+---
+
+WeatherDroid is a modern weather application for Android, built with Kotlin and Jetpack Compose. It enables users to view current weather conditions for their location or select from a list of major cities worldwide. The app demonstrates proficiency in Android development, location services, REST API integration, and UI/UX design.
+
+## Features
+
+- View current weather for your location using Android's location services
+- Select from a list of major cities to check their weather
+- Displays temperature and visual weather indicators (Sunny, Cloudy, Rainy, etc.) with SVG icons
+- Modern, responsive UI built with Jetpack Compose
+- Runtime location permission handling for Android 12+ compatibility
+
+## Technologies Used
+
+- Kotlin
+- Jetpack Compose
+- Android SDK (LocationManager, Geocoder)
+- Retrofit (REST API calls)
+- Lucide Icons (SVG weather icons)
+- OpenMeteo API

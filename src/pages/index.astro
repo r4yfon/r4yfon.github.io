@@ -1,0 +1,133 @@
+---
+import Changelog from "@/components/Changelog.astro";
+import CopyEmail from "@/components/CopyEmail.astro";
+import ProjectCard from "@/components/ProjectCard.astro";
+import ProjectThumb from "@/components/ProjectThumb.astro";
+import Section from "@/components/Section.astro";
+import Sidebar from "@/components/Sidebar.astro";
+import { experience, principles, site } from "@/data/site";
+import Base from "@/layouts/Base.astro";
+import { formatMonth, getProjects } from "@/lib/projects";
+
+const projects = await getProjects();
+const featured = projects.filter((p) => p.data.featured);
+const android = projects.filter((p) => p.data.kind === "android");
+const more = projects.filter((p) => !p.data.featured && p.data.kind !== "android");
+
+const sections = [
+  { id: "about", label: "About" },
+  { id: "experience", label: "Experience" },
+  { id: "projects", label: "Things I've shipped" },
+  { id: "principles", label: "How I build" },
+];
+---
+
+<Base>
+  <div class="relative z-1 mx-auto grid max-w-295 gap-6 px-[clamp(16px,5vw,64px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-16">
+    <Sidebar sections={sections} />
+
+    <main class="grid min-w-0 gap-22 pb-16 lg:py-22">
+      <Section id="about" label="About">
+        <div class="grid max-w-[62ch] gap-4 text-muted [&_strong]:font-medium [&_strong]:text-fg">
+          <p>
+            I'm an undergraduate in <strong>Information Systems</strong> with a second major in <strong>Psychology</strong>. One half of me asks <span class="bg-[linear-gradient(transparent_62%,color-mix(in_srgb,var(--peach)_32%,transparent)_0)] text-fg">why people do what they do</span>; the other half ships the feature that helps them do it.
+          </p>
+          <p>
+            It started at eight years old, when I jailbroke my first iPhone. Since then I've been building side projects across Vue, React, SvelteKit, Flask and Android. I still prototype ideas in Figma first, and I keep the user in the room when I'm deciding what to build.
+          </p>
+          <p>Right now I'm looking for <strong>[product / APM / fullstack]</strong> roles where I can own a problem from discovery to deploy.</p>
+        </div>
+        <div class="mt-5.5"><CopyEmail /></div>
+      </Section>
+
+      <Section id="experience" label="Experience">
+        <ol class="group/list grid gap-3.5">
+          {
+            experience.map((item) => (
+              <li
+                class:list={[
+                  "spring relative grid gap-x-6 gap-y-1.5 rounded-2xl border p-5 transition-[translate,rotate,background-color,border-color,opacity] duration-500 sm:grid-cols-[116px_minmax(0,1fr)]",
+                  item.placeholder
+                    ? "border-dashed border-line text-muted"
+                    : "border-transparent group-hover/list:opacity-55 hover:-translate-y-1 hover:border-line hover:bg-surface hover:opacity-100!",
+                ]}
+                data-blip>
+                <span class="font-mono text-xs/[1.9] font-medium tracking-[0.06em] text-muted uppercase">{item.when}</span>
+                <div class="min-w-0">
+                  <h3 class="text-[1.05rem] leading-snug font-semibold">{item.title}</h3>
+                  <p class="mt-1 text-[0.95rem] text-muted">{item.body}</p>
+                  <div class="mt-3 flex flex-wrap gap-1.5">{item.chips.map((c) => <span class="chip">{c}</span>)}</div>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+      </Section>
+
+      <Section id="projects" label="Things I've shipped">
+        <ol class="group/list grid gap-3.5">
+          {featured.map((p) => <ProjectCard project={p} />)}
+        </ol>
+
+        {
+          android.length > 0 && (
+            <div class="mt-8 px-5">
+              <h3 class="eyebrow mb-3">Android, three apps in three months</h3>
+              <ul class="grid grid-cols-3 gap-3">
+                {android.map((p) => (
+                  <li>
+                    <a href={`/projects/${p.id}/`} class="group/app grid gap-2" data-blip>
+                      <ProjectThumb project={p} class="spring aspect-square transition-transform duration-500 group-hover/app:-translate-y-1 group-hover/app:-rotate-2" />
+                      <span class="text-sm font-medium" style={`view-transition-name: title-${p.id}; view-transition-class: project-title`}>
+                        {p.data.title}
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
+
+        {
+          more.length > 0 && (
+            <div class="mt-8 px-5">
+              <h3 class="eyebrow mb-3">Also built</h3>
+              <ul class="grid gap-1">
+                {more.map((p) => (
+                  <li>
+                    <a href={`/projects/${p.id}/`} class="group/more flex items-baseline justify-between gap-4 border-b border-line py-2.5 hover:text-peach" data-blip>
+                      <span class="font-medium" style={`view-transition-name: title-${p.id}; view-transition-class: project-title`}>
+                        {p.data.title}
+                      </span>
+                      <span class="shrink-0 font-mono text-xs text-muted">{formatMonth(p.data.date)}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
+
+        <a class="group/gh mt-6 inline-flex items-center gap-2 px-5 font-medium" href={site.github} target="_blank" rel="noopener noreferrer">
+          See everything on GitHub <span class="spring text-peach transition-transform duration-450 group-hover/gh:translate-x-1.5">→</span>
+        </a>
+      </Section>
+
+      <Section id="principles" label="How I build">
+        <ul class="grid gap-3 sm:grid-cols-2">
+          {
+            principles.map((p) => (
+              <li class="spring rounded-2xl border border-line bg-surface px-5 py-4.5 transition-[translate,rotate,border-color] duration-500 hover:-translate-y-1 hover:rotate-[0.4deg] hover:border-peri" data-blip>
+                <b class="mb-1 block font-display text-xl font-normal">{p.title}</b>
+                <span class="text-[0.93rem] text-muted">{p.body}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </Section>
+
+      <Changelog />
+    </main>
+  </div>
+</Base>

@@ -1,0 +1,115 @@
+---
+import { render } from "astro:content";
+import Logo from "@/components/Logo.astro";
+import ProjectThumb from "@/components/ProjectThumb.astro";
+import SoundToggle from "@/components/SoundToggle.astro";
+import ThemeToggle from "@/components/ThemeToggle.astro";
+import Base from "@/layouts/Base.astro";
+import { captionFromFile, formatMonth, getProjects, projectMedia, type Project } from "@/lib/projects";
+
+export async function getStaticPaths() {
+  const projects = await getProjects();
+  return projects.map((project) => ({ params: { id: project.id }, props: { project } }));
+}
+
+interface Props {
+  project: Project;
+}
+const { project } = Astro.props;
+const { id, data } = project;
+const { Content } = await render(project);
+const media = projectMedia(id);
+const pdi = [
+  ["Problem", data.problem],
+  ["Decision", data.decision],
+  ["Impact", data.impact],
+].filter((row): row is [string, string] => Boolean(row[1]));
+---
+
+<Base title={data.title} description={data.description} expect="project-hero">
+  <div class="relative z-1 mx-auto max-w-3xl px-[clamp(16px,5vw,48px)] pt-10 pb-24">
+    <nav class="flex items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <Logo size={40} intro={false} href="/" />
+        <a href="/#projects" class="group/back font-mono text-xs font-medium tracking-[0.14em] text-muted uppercase hover:text-fg">
+          <span class="spring inline-block transition-transform duration-450 group-hover/back:-translate-x-1">←</span> All projects
+        </a>
+      </div>
+      <div class="flex gap-2.5"><ThemeToggle /><SoundToggle /></div>
+    </nav>
+
+    <header id="project-hero" class="mt-12 grid gap-6">
+      <div>
+        <p class="eyebrow">{formatMonth(data.date)} · {data.role}</p>
+        <h1 class="mt-3 font-display text-[clamp(2.2rem,6vw,3.4rem)] leading-[1.05]">
+          <span class="inline-block" style={`view-transition-name: title-${id}; view-transition-class: project-title`}>{data.title}</span>
+        </h1>
+        <p class="mt-3 max-w-[60ch] text-lg text-muted">{data.description}</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2.5">
+        {data.demo && <a class="rounded-xl bg-peach px-4 py-2 text-sm font-semibold text-accent-ink" href={data.demo} target="_blank" rel="noopener noreferrer">Live demo ↗&#xFE0E;</a>}
+        {data.repo && <a class="rounded-xl border border-line bg-surface px-4 py-2 text-sm font-medium hover:border-peri" href={data.repo} target="_blank" rel="noopener noreferrer">Source ↗&#xFE0E;</a>}
+        {data.tags.map((t) => <span class="chip">{t}</span>)}
+      </div>
+      <ProjectThumb project={project} class={media.thumbnail ? "" : "aspect-[16/7]"} eager />
+    </header>
+
+    {
+      pdi.length > 0 && (
+        <dl class="mt-10 grid gap-4 rounded-2xl border border-line bg-surface p-6 sm:grid-cols-3">
+          {pdi.map(([term, text]) => (
+            <div>
+              <dt class:list={["font-mono text-[11px] font-medium tracking-[0.1em] uppercase", term === "Impact" ? "text-peach" : "text-peri"]}>{term}</dt>
+              <dd class="mt-1.5 text-[0.95rem] text-muted">{text}</dd>
+            </div>
+          ))}
+        </dl>
+      )
+    }
+
+    <article class="prose mt-10">
+      <Content />
+    </article>
+
+    {
+      media.video && (
+        <video class="mt-10 w-full rounded-2xl border border-line" src={media.video} controls muted playsinline preload="metadata" />
+      )
+    }
+
+    {
+      media.screenshots.length > 0 && (
+        <section class="mt-10">
+          <h2 class="eyebrow mb-4">Screens</h2>
+          <div class="grid gap-6">
+            {media.screenshots.map((src) => (
+              <figure>
+                <img src={src} alt={captionFromFile(src)} class="w-full rounded-xl border border-line" loading="lazy" decoding="async" />
+                <figcaption class="mt-2 font-mono text-xs text-muted">{captionFromFile(src)}</figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+      )
+    }
+  </div>
+</Base>
+
+<style>
+  /* Markdown body: rendered HTML has no scope attributes, so style it through :global */
+  .prose { max-width: 65ch; color: var(--muted); }
+  .prose :global(:where(h2, h3)) { margin: 2em 0 0.6em; color: var(--fg); font-weight: 600; line-height: 1.3; }
+  .prose :global(h2) { font-size: 1.35rem; }
+  .prose :global(h3) { font-size: 1.1rem; }
+  .prose :global(:where(p, ul, ol)) { margin: 0 0 1em; }
+  .prose :global(:where(ul, ol)) { padding-left: 1.25em; }
+  .prose :global(ul) { list-style: disc; }
+  .prose :global(ol) { list-style: decimal; }
+  .prose :global(li) { margin: 0.3em 0; }
+  .prose :global(li::marker) { color: var(--peach); }
+  .prose :global(strong) { color: var(--fg); font-weight: 600; }
+  .prose :global(a) { color: var(--fg); text-decoration: underline; text-decoration-color: var(--peach); text-underline-offset: 3px; }
+  .prose :global(code) { font-family: var(--font-mono); font-size: 0.9em; color: var(--fg); background: var(--chip-bg); padding: 0.1em 0.35em; border-radius: 6px; }
+  .prose :global(pre) { overflow-x: auto; padding: 1em; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
+  .prose :global(pre code) { background: none; padding: 0; }
+</style>

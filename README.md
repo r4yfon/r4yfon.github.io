@@ -1,49 +1,48 @@
-<p align="center">
-  <a href="https://www.gatsbyjs.com/?utm_source=starter&utm_medium=readme&utm_campaign=minimal-starter-ts">
-    <img alt="Gatsby" src="https://www.gatsbyjs.com/Gatsby-Monogram.svg" width="60" />
-  </a>
-</p>
-<h1 align="center">
-  Gatsby Minimal TypeScript Starter
-</h1>
+# r4yfon.github.io
 
-## 🚀 Quick start
+Personal portfolio of Ray Fon: product manager × fullstack engineer.
 
-1.  **Create a Gatsby site.**
+Built with [Astro](https://astro.build) and Tailwind CSS, deployed to GitHub Pages.
 
-    Use the Gatsby CLI to create a new site, specifying the minimal TypeScript starter.
+## Develop
 
-    ```shell
-    # create a new Gatsby site using the minimal TypeScript starter
-    npm init gatsby -- -ts
-    ```
+```sh
+bun install
+bun run dev       # http://localhost:4321
+bun run build     # static site in dist/
+bun run check     # type-check .astro and .ts files
+```
 
-2.  **Start developing.**
+## Where things live
 
-    Navigate into your new site’s directory and start it up.
+| What | Where |
+| --- | --- |
+| Bio, links, experience, principles, changelog | `src/data/site.ts` |
+| Projects (one Markdown file each) | `src/content/projects/*.md` |
+| Project images | `public/assets/<project-id>/`: `thumbnail.webp`, `logo.webp`, `z_*.webp` screenshots, `y-demo.webm` |
+| Design tokens (colours, fonts, easing) | `src/styles/global.css` |
+| Archived v2 (Gatsby build, served at `/v2/`) | `public/v2/`, source on the `v2` tag |
 
-    ```shell
-    cd my-gatsby-site/
-    npm run develop
-    ```
+### Adding a project
 
-3.  **Open the code and start customizing!**
+Create `src/content/projects/<id>.md`:
 
-    Your site is now running at http://localhost:8000!
+```md
+---
+title: "My Project"
+date: "2026-03"
+description: "One sentence on what it is."
+kind: web            # web | android | case-study
+role: "Solo"
+tags: [Astro, Supabase]
+repo: https://github.com/r4yfon/my-project
+demo: https://my-project.example
+featured: true       # show as a full card on the home page
+order: 4
+problem: "What was broken, for whom."
+decision: "What you chose to build and why."
+impact: "What changed because of it."
+---
 
-    Edit `src/pages/index.tsx` to see your site update in real-time!
-
-4.  **Learn more**
-
-    - [Documentation](https://www.gatsbyjs.com/docs/?utm_source=starter&utm_medium=readme&utm_campaign=minimal-starter-ts)
-    - [Tutorials](https://www.gatsbyjs.com/docs/tutorial/?utm_source=starter&utm_medium=readme&utm_campaign=minimal-starter-ts)
-    - [Guides](https://www.gatsbyjs.com/docs/how-to/?utm_source=starter&utm_medium=readme&utm_campaign=minimal-starter-ts)
-    - [API Reference](https://www.gatsbyjs.com/docs/api-reference/?utm_source=starter&utm_medium=readme&utm_campaign=minimal-starter-ts)
-    - [Plugin Library](https://www.gatsbyjs.com/plugins?utm_source=starter&utm_medium=readme&utm_campaign=minimal-starter-ts)
-    - [Cheat Sheet](https://www.gatsbyjs.com/docs/cheat-sheet/?utm_source=starter&utm_medium=readme&utm_campaign=minimal-starter-ts)
-
-## 🚀 Quick start (Netlify)
-
-Deploy this starter with one click on [Netlify](https://app.netlify.com/signup):
-
-[<img src="https://www.netlify.com/img/deploy/button.svg" alt="Deploy to Netlify" />](https://app.netlify.com/start/deploy?repository=https://github.com/gatsbyjs/gatsby-starter-minimal-ts)
+Longer write-up in Markdown.
+```

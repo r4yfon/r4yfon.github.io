@@ -1,6 +1,13 @@
+# dependencies
 node_modules/
-.cache/
-public
-src/gatsby-types.d.ts
+
+# build output
+dist/
+.astro/
+
+# env
 .env
-*.env
+.env.*
+
+# OS / editor
+.DS_Store

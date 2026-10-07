@@ -1,0 +1,13 @@
+---
+interface Props {
+  id: string;
+  label: string;
+}
+const { id, label } = Astro.props;
+---
+
+<section id={id} class="min-w-0 scroll-mt-12">
+  <!-- on desktop the sidebar names the section; on mobile this label does -->
+  <h2 class="eyebrow mb-5.5 flex items-center gap-3 after:h-px after:flex-1 after:bg-line lg:sr-only">{label}</h2>
+  <slot />
+</section>

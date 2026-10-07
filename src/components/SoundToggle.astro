@@ -1,0 +1,29 @@
+<button class="icon-btn sound-btn" type="button" aria-pressed="false" aria-label="Interface sounds">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M11 5 6 9H2v6h4l5 4V5z"></path>
+    <path class="wave" d="M15.5 8.5a5 5 0 0 1 0 7"></path>
+    <path class="mute" d="M22 9l-6 6M16 9l6 6"></path>
+  </svg>
+</button>
+
+<script>
+  import { blip, isSoundOn, setSound } from "@/scripts/sound";
+
+  const buttons = document.querySelectorAll<HTMLButtonElement>(".sound-btn");
+  const paint = () => buttons.forEach((b) => b.setAttribute("aria-pressed", String(isSoundOn())));
+  buttons.forEach((b) =>
+    b.addEventListener("click", () => {
+      setSound(!isSoundOn());
+      blip(880);
+    }),
+  );
+  document.addEventListener("rf:sound", paint);
+  paint();
+</script>
+
+<style>
+  .wave { display: none; }
+  [aria-pressed="true"] { color: var(--peach); border-color: var(--peach); }
+  [aria-pressed="true"] .wave { display: inline; }
+  [aria-pressed="true"] .mute { display: none; }
+</style>

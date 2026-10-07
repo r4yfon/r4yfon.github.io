@@ -1,0 +1,33 @@
+---
+import { site } from "@/data/site";
+---
+
+<div class="flex flex-wrap items-center gap-2.5 font-mono text-sm">
+  <code class="email text-fg select-all">{site.email}</code>
+  <button
+    class="copy-btn spring cursor-pointer rounded-lg border border-line bg-surface px-2.5 py-1.5 text-xs font-medium text-muted transition duration-400 hover:-translate-y-0.5 hover:text-fg"
+    type="button">copy</button>
+</div>
+
+<script>
+  import { blip } from "@/scripts/sound";
+
+  for (const btn of document.querySelectorAll<HTMLButtonElement>(".copy-btn")) {
+    const email = btn.parentElement!.querySelector(".email")!;
+    btn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(email.textContent!.trim());
+        btn.textContent = "copied ✓";
+        btn.classList.add("text-peach", "border-peach");
+        blip(990);
+        setTimeout(() => {
+          btn.textContent = "copy";
+          btn.classList.remove("text-peach", "border-peach");
+        }, 1600);
+      } catch {
+        getSelection()?.selectAllChildren(email);
+        btn.textContent = "press Ctrl/⌘+C";
+      }
+    });
+  }
+</script>

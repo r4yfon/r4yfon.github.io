@@ -1,0 +1,70 @@
+---
+import { Font } from "astro:assets";
+import Spotlight from "@/components/Spotlight.astro";
+import { site } from "@/data/site";
+import "@/styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** id of the above-the-fold element the view transition should wait for */
+  expect?: string;
+}
+
+const { title, description = site.description, expect } = Astro.props;
+const pageTitle = title ? `${title} · ${site.name}` : site.title;
+const ogImage = new URL("/assets/social-banner.png", Astro.site);
+
+// prerender project pages on hover so the view transition starts instantly
+const speculationRules = JSON.stringify({
+  prerender: [{ where: { href_matches: "/projects/*" }, eagerness: "moderate" }],
+});
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+
+    <Font cssVariable="--font-caprasimo" preload />
+    <Font cssVariable="--font-geist" preload />
+    <Font cssVariable="--font-geist-mono" />
+
+    {expect && <link rel="expect" href={`#${expect}`} blocking="render" />}
+    <script type="speculationrules" set:html={speculationRules} />
+
+    <!-- resolve the theme before first paint so there's no flash (and the transition snapshot is right) -->
+    <script is:inline>
+      (() => {
+        const root = document.documentElement;
+        let saved = null;
+        try { saved = localStorage.getItem("rf-theme"); } catch {}
+        if (saved) root.dataset.theme = saved;
+        const mq = matchMedia("(prefers-color-scheme: dark)");
+        const sync = () => { root.dataset.mode = root.dataset.theme || (mq.matches ? "dark" : "light"); };
+        sync();
+        mq.addEventListener("change", sync);
+      })();
+    </script>
+  </head>
+  <body>
+    <Spotlight />
+    <slot />
+  </body>
+</html>
+
+<script>
+  import "@/scripts/sound";
+</script>
