@@ -190,8 +190,13 @@ const single = stops.length < 2;
       for (let k = 1; k < targets.length; k++) if (Math.abs(targets[k] - at) < Math.abs(targets[best] - at)) best = k;
       return best;
     };
+    // the stop a smooth scroll is on its way to: the scroll passes through where it started first,
+    // which would otherwise flick the caption back to the old stop
+    let heading = -1;
     const go = (k: number, instant = false) => {
-      track.scrollTo({ left: targets[k], behavior: instant || reducedMotion() ? "instant" : "smooth" });
+      const smooth = !instant && !reducedMotion();
+      heading = smooth ? k : -1;
+      track.scrollTo({ left: targets[k], behavior: smooth ? "smooth" : "instant" });
       update(k);
     };
 
@@ -561,11 +566,23 @@ const single = stops.length < 2;
           scrub.style.setProperty("--p", String(clamp(track.scrollLeft / maxScroll() || 0)));
           if (stops.length < 2 || dragging) return;
           const k = nearest();
+          if (heading >= 0) {
+            if (k !== heading) return;
+            heading = -1;
+          }
           if (k !== current) update(k);
         });
       },
       { passive: true },
     );
+    // a swipe or wheel that takes over mid-scroll goes wherever it goes
+    for (const type of ["pointerdown", "wheel", "touchstart", "keydown"]) track.addEventListener(type, () => (heading = -1), { passive: true });
+    track.addEventListener("scrollend", () => {
+      if (heading < 0 || dragging) return;
+      heading = -1;
+      const k = nearest();
+      if (k !== current) update(k);
+    });
 
     // dragging (or pressing anywhere on the rail) scrolls the track directly. Snapping is off
     // meanwhile so it glides, then lands on the nearest stop on release
@@ -722,7 +739,9 @@ const single = stops.length < 2;
   @media (hover: hover) { .box-bar .icon-btn:hover { border-color: var(--line); background: var(--bg); color: var(--peri); } }
   .box-bar .icon-btn:disabled { opacity: 0.5; border-color: transparent; background: none; color: var(--muted); }
   .box-count { padding: 0 6px; color: var(--muted); }
-  .stage { display: grid; justify-items: center; gap: 10px; min-height: 0; max-height: 100%; margin: 0; }
+  /* the stage fills the box with the caption pinned to its foot, so it stays put while stepping
+     between shots of different shapes (or while the next one loads) */
+  .stage { display: grid; grid-template-rows: minmax(0, 1fr) auto; place-items: center; place-self: stretch; gap: 10px; min-height: 0; margin: 0; }
   .stage :global(.full) {
     display: block;
     max-width: 100%;
@@ -759,6 +778,11 @@ const single = stops.length < 2;
   .scrub:hover .rail,
   .scrub.dragging .rail,
   .scrub:focus-visible .rail { height: 8px; }
+  /* the padding gives way as the rail grows, so the caption below doesn't move */
+  .scrub { transition: padding 0.15s; }
+  .scrub:hover,
+  .scrub.dragging,
+  .scrub:focus-visible { padding-block: 7px; }
   .rail :global(.tick) { flex: 1; border-radius: 99px; background: var(--line); }
   .thumb {
     position: absolute;
