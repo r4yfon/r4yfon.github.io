@@ -3,7 +3,7 @@
  * A project's image (thumbnail, else app logo, else a tinted tile with its initials).
  * Carries `thumb-<id>` so it morphs into the hero on the project page.
  */
-import { projectMedia, type Project } from "@/lib/projects";
+import { projectMedia, vt, type Project } from "@/lib/projects";
 
 interface Props {
   project: Project;
@@ -14,6 +14,7 @@ interface Props {
 }
 const { project, class: className, eager = false, framed = false } = Astro.props;
 const media = projectMedia(project.id);
+const src = media.thumbnail ?? media.logo;
 const tints = ["#adbbd6, #7f95c4", "#e9d2bb, #d9ad84", "#c9d3e6, #e9d2bb", "#9fd3b6, #adbbd6"];
 const tint = tints[[...project.id].reduce((n, c) => n + c.charCodeAt(0), 0) % tints.length];
 const initials = project.data.title.replace(/[^A-Za-z ]/g, "").split(" ").map((w) => w[0]).join("").slice(0, 3);
@@ -21,12 +22,18 @@ const initials = project.data.title.replace(/[^A-Za-z ]/g, "").split(" ").map((w
 
 <div
   class:list={["grid aspect-16/10 max-w-full place-items-center overflow-hidden", framed ? "rounded-md" : "rounded-[10px] border border-line", className]}
-  style={`view-transition-name: thumb-${project.id}; view-transition-class: project-thumb; background: linear-gradient(135deg, ${tint})`}>
+  style={`view-transition-name: ${vt.thumb(project.id)}; view-transition-class: project-thumb; background: linear-gradient(135deg, ${tint})`}
+  data-vt-thumb>
   {
-    media.thumbnail ? (
-      <img src={media.thumbnail} alt="" class="size-full object-cover object-top" loading={eager ? "eager" : "lazy"} decoding="async" />
-    ) : media.logo ? (
-      <img src={media.logo} alt="" class="size-3/5 object-contain" loading={eager ? "eager" : "lazy"} decoding="async" />
+    src ? (
+      <img
+        src={src}
+        alt=""
+        class={media.thumbnail ? "size-full object-cover object-top" : "size-3/5 object-contain"}
+        loading={eager ? "eager" : "lazy"}
+        decoding={eager ? "sync" : "async"}
+        fetchpriority={eager ? "high" : undefined}
+      />
     ) : (
       <span class="font-display text-2xl text-[#1a1410]">{initials}</span>
     )

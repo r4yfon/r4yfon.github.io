@@ -15,9 +15,9 @@ const { title, description = site.description, expect } = Astro.props;
 const pageTitle = title ? `${title} · ${site.name}` : site.title;
 const ogImage = new URL("/assets/social-banner.png", Astro.site);
 
-// prerender project pages on hover so the view transition starts instantly
+// prerender project pages and home on hover (or touch-down) so the view transition starts instantly
 const speculationRules = JSON.stringify({
-  prerender: [{ where: { href_matches: "/projects/*" }, eagerness: "moderate" }],
+  prerender: [{ where: { href_matches: ["/", "/projects/*"] }, eagerness: "moderate" }],
 });
 ---
 
@@ -25,7 +25,12 @@ const speculationRules = JSON.stringify({
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- paints the right canvas colour before the CSS arrives; the script below pins it to a saved override -->
+    <meta name="color-scheme" content="light dark" />
+    <!-- tints the mobile browser's bars (status bar, toolbar) to the page background; kept in step with the theme below -->
+    <meta name="theme-color" content="#f2f4f8" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0e1320" media="(prefers-color-scheme: dark)" />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
@@ -38,7 +43,7 @@ const speculationRules = JSON.stringify({
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
 
-    <Font cssVariable="--font-caprasimo" preload />
+    <Font cssVariable="--font-fraunces" preload />
     <Font cssVariable="--font-sora" preload />
     <Font cssVariable="--font-geist-mono" />
 
@@ -49,18 +54,93 @@ const speculationRules = JSON.stringify({
     <script is:inline>
       (() => {
         const root = document.documentElement;
-        let saved = null;
-        try { saved = localStorage.getItem("rf-theme"); } catch {}
-        if (saved) root.dataset.theme = saved;
-        try { if (localStorage.getItem("rf-logo-motion") === "paused") root.dataset.logoMotion = "paused"; } catch {}
+        const meta = document.querySelector('meta[name="color-scheme"]');
         const mq = matchMedia("(prefers-color-scheme: dark)");
+        // data-theme holds an explicit override (none = follow the OS); data-mode is what's actually showing
         const sync = () => { root.dataset.mode = root.dataset.theme || (mq.matches ? "dark" : "light"); };
-        sync();
+        // the theme-color tags follow the OS by their media queries; an explicit override pins both to
+        // the matching tag's colour (each remembers its own in data-os)
+        const tint = () => {
+          const tags = [...document.querySelectorAll('meta[name="theme-color"]')];
+          for (const m of tags) m.dataset.os ??= m.content;
+          const pinned = root.dataset.theme && tags.find((m) => m.media.includes(root.dataset.theme)).dataset.os;
+          for (const m of tags) m.content = pinned || m.dataset.os;
+        };
+        new MutationObserver(tint).observe(root, { attributeFilter: ["data-mode", "data-theme"] });
+        // "light" / "dark" pins the scheme, null follows the OS. ThemeToggle calls this too, so the two can't drift
+        const setTheme = (theme) => {
+          if (theme) root.dataset.theme = theme;
+          else delete root.dataset.theme;
+          meta.content = theme || "light dark";
+          sync();
+        };
+        window.rfSetTheme = setTheme;
+        const apply = () => {
+          let saved = null;
+          try { saved = localStorage.getItem("rf-theme"); } catch {}
+          setTheme(saved);
+        };
+        apply();
+        tint();
         mq.addEventListener("change", sync);
+        // follow a toggle made in another tab (or on the page this one was prerendered from)
+        addEventListener("storage", (e) => { if (e.key === "rf-theme") apply(); });
+        // a prerendered page holds its entrance animations until it's actually shown
+        if (document.prerendering) {
+          root.dataset.prerendering = "";
+          document.addEventListener("prerenderingchange", () => delete root.dataset.prerendering, { once: true });
+        }
+        // logo motion starts paused under reduced motion, unless the visitor explicitly pressed play
+        let motion = null;
+        try { motion = localStorage.getItem("rf-logo-motion"); } catch {}
+        if (motion === "paused" || (!motion && matchMedia("(prefers-reduced-motion: reduce)").matches)) root.dataset.logoMotion = "paused";
+      })();
+
+      // thumbnails morph between differently rounded boxes (card 6px, app icon 10px, carousel 14px),
+      // so carry the outgoing radius across the navigation and animate the group's corners to the new one.
+      // Inline in <head> so the pagereveal listener exists before the first frame.
+      (() => {
+        const KEY = "rf-vt-radii";
+        const radii = () => {
+          const out = {};
+          for (const el of document.querySelectorAll("[data-vt-thumb]")) {
+            const name = el.style.viewTransitionName;
+            if (name && el.getClientRects().length) out[name] = getComputedStyle(el).borderTopLeftRadius;
+          }
+          return out;
+        };
+        addEventListener("pageswap", (e) => {
+          if (!e.viewTransition) return;
+          try { sessionStorage.setItem(KEY, JSON.stringify(radii())); } catch {}
+        });
+        addEventListener("pagereveal", (e) => {
+          if (!e.viewTransition) return;
+          // project → project (prev/next): same chrome on both sides, so skip the slide-up entrance
+          const isProject = (url) => !!url && new URL(url).pathname.startsWith("/projects/");
+          if (isProject(location.href) && isProject(window.navigation?.activation?.from?.url)) e.viewTransition.types?.add("between-projects");
+          let from = {};
+          try { from = JSON.parse(sessionStorage.getItem(KEY) || "{}"); sessionStorage.removeItem(KEY); } catch {}
+          e.viewTransition.ready.then(() => {
+            const root = document.documentElement;
+            const css = getComputedStyle(root);
+            const duration = parseFloat(css.getPropertyValue("--vt-dur")) * 1000 || 280;
+            const easing = css.getPropertyValue("--vt-ease").trim() || "ease";
+            const to = radii();
+            for (const name in to) {
+              if (!from[name]) continue;
+              root.animate(
+                { borderRadius: [from[name], to[name]] },
+                { duration, easing, fill: "both", pseudoElement: `::view-transition-group(${name})` },
+              );
+            }
+          }).catch(() => {});
+        });
       })();
     </script>
   </head>
   <body>
+    <!-- every page's <main id="main" tabindex="-1"> is the target; hidden until tabbed to -->
+    <a href="#main" class="sr-only z-50 rounded-xl bg-peach text-sm font-semibold text-accent-ink focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:px-4 focus:py-2">Skip to content</a>
     <Spotlight />
     <slot />
   </body>

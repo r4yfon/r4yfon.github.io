@@ -2,31 +2,31 @@
 title: "WFH Scheduler"
 slug: wfh-scheduler
 date: "2024-11"
-description: "Comprehensive work-from-home management tool with Flask backend and Vue 3 frontend."
+description: "Role-based work-from-home scheduling for staff, managers, directors and HR, built with Flask and Vue 3."
 kind: web
-role: "Team project"
-tags: [Flask, Vue 3, NeonDB, Vercel]
-repo: https://github.com/r4yfon/wfh-management-tool
+role: "Group · Fullstack & deployment"
+tags: [Flask, Vue 3, MySQL, NeonDB, Vercel]
+repo: https://github.com/r4yfon/is212-wfh-management-tool
 demo: https://is212-frontend.vercel.app/
 featured: true
-order: 1
+order: 2
 problem: "Teams tracked work-from-home requests in spreadsheets and chat, so nobody had one view of who was in the office."
-decision: "Three role-based dashboards (staff, manager, CEO) on one data model, with recurring requests and an audit log of status changes."
-# impact: "TODO: one measurable or concrete outcome"
+decision: "Four role-based views (staff, manager, director, HR) on one data model, with a six-state approval flow and an alert when a team's in-office attendance drops below 50%."
+impact: "Shipped to production in two months with CI on every push (GitHub Actions running 19 pytest tests). I built the director view and handled the deployment."
 ---
 
-WFH Scheduler is a comprehensive solution designed to manage work-from-home (WFH) schedules for employees. The project features a backend built with Flask and a frontend developed using Vue 3 with Vite. It facilitates employee management, WFH request handling, schedule viewing, and status logging.
+WFH Scheduler replaces the spreadsheets and chat threads that teams used for work-from-home requests with a single app showing who is in the office on any given day. It was a group project with a Flask backend and a Vue 3 frontend. I built the director view and owned the deployment.
 
-Users can log in as regular staff, managers, or CEOs, each with different access rights and dashboard views. Staff can submit and view their own WFH requests. Managers can view and manage requests for employees in their team, approve or reject requests, and oversee team schedules. CEOs have access to organization-wide data and can monitor all teams and requests.
+## Four roles, one schedule
 
-## Key Features
+Users log in as staff, managers, directors or HR, each with their own access rights and dashboard. Staff submit and track their own WFH requests. Managers approve, reject or rescind requests from their team and see its schedule. Directors see across the teams under them, and HR sees the whole organisation by department, with any day under 50% in-office attendance flagged.
 
-- **Employee Management:** Manage employee data including personal details and roles.
-- **WFH Requests:** Employees can submit one-time or recurring WFH requests.
-- **Schedule Management:** View and manage WFH schedules for employees.
-- **Request Handling:** Approve, reject, or rescind WFH requests.
-- **Status Logging:** Log and track the status changes of WFH requests.
+## Requests and approvals
+
+- **One-time or recurring:** staff can request a single day or a repeating arrangement in one submission.
+- **Reversible decisions:** managers can rescind a request they've already approved when plans change.
+- **Full history:** every status change is logged, so it's always clear how a request got where it is.
 
 ## Deployment
 
-The project is deployed on Vercel, with both frontend and backend hosted on the platform. The database is managed using NeonDB, a serverless PostgreSQL provider.
+The frontend and the Flask API are both hosted on Vercel. We developed against a local MySQL database, and production runs on NeonDB, a serverless PostgreSQL provider. GitHub Actions runs the pytest suite on every push.

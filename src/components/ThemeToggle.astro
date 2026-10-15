@@ -1,8 +1,13 @@
-<button class="icon-btn theme-btn" type="button" aria-label="Toggle light or dark theme">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-    <mask id="moon-mask"><rect width="24" height="24" fill="#fff"></rect><circle class="moon-cut" cx="30" cy="0" r="6" fill="#000"></circle></mask>
+---
+// unique per copy: the toggle appears more than once on a page (sidebar + section sheet)
+const maskId = `moon-mask-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<button class="icon-btn theme-btn" type="button" aria-label="Dark theme" aria-pressed="false">
+  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+    <mask id={maskId}><rect width="24" height="24" fill="#fff"></rect><circle class="moon-cut" cx="30" cy="0" r="6" fill="#000"></circle></mask>
     <g class="sun-moon">
-      <circle cx="12" cy="12" r="5.5" fill="currentColor" stroke="none" mask="url(#moon-mask)"></circle>
+      <circle cx="12" cy="12" r="5.5" fill="currentColor" stroke="none" mask={`url(#${maskId})`}></circle>
       <path class="rays" d="M12 1.5v2M12 20.5v2M1.5 12h2M20.5 12h2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M4.6 19.4 6 18M18 6l1.4-1.4"></path>
     </g>
   </svg>
@@ -12,15 +17,29 @@
   import { blip } from "@/scripts/sound";
 
   const root = document.documentElement;
-  for (const btn of document.querySelectorAll(".theme-btn")) {
+  // defined by Base.astro's inline head script, which owns data-theme, data-mode and the color-scheme meta
+  const { rfSetTheme } = window as unknown as Window & { rfSetTheme(theme: string | null): void };
+  const osDark = matchMedia("(prefers-color-scheme: dark)");
+  const buttons = document.querySelectorAll<HTMLButtonElement>(".theme-btn");
+  const paint = () => buttons.forEach((b) => b.setAttribute("aria-pressed", String(root.dataset.mode === "dark")));
+
+  // Two visible states, three underlying ones: flipping to the OS's own scheme clears the override
+  // (so the site follows the OS again), flipping away from it pins the opposite.
+  buttons.forEach((btn) =>
     btn.addEventListener("click", () => {
       const next = root.dataset.mode === "dark" ? "light" : "dark";
-      root.dataset.theme = next;
-      root.dataset.mode = next;
-      try { localStorage.setItem("rf-theme", next); } catch {}
+      const followOs = next === (osDark.matches ? "dark" : "light");
+      rfSetTheme(followOs ? null : next);
+      try {
+        if (followOs) localStorage.removeItem("rf-theme");
+        else localStorage.setItem("rf-theme", next);
+      } catch {}
       blip(next === "dark" ? 330 : 660);
-    });
-  }
+    }),
+  );
+  // data-mode also changes with the OS or another tab (Base.astro), so watch it rather than the clicks
+  new MutationObserver(paint).observe(root, { attributeFilter: ["data-mode"] });
+  paint();
 </script>
 
 <style>

@@ -9,13 +9,15 @@ export default defineConfig({
   fonts: [
     {
       provider: fontProviders.fontsource(),
-      name: "Caprasimo",
-      cssVariable: "--font-caprasimo",
-      weights: [400],
-      fallbacks: ["Cooper Black", "Georgia", "serif"],
+      name: "Fraunces",
+      cssVariable: "--font-fraunces",
+      weights: [900],
+      // latin-ext carries the macron in "Chūmon".
+      subsets: ["latin", "latin-ext"],
+      fallbacks: ["Georgia", "serif"],
     },
     {
-      provider: fontProviders.google(),
+      provider: fontProviders.fontsource(),
       name: "Sora",
       cssVariable: "--font-sora",
       weights: [400, 500, 600],

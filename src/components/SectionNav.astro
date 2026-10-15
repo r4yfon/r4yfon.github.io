@@ -1,8 +1,14 @@
 ---
 /**
  * Below `lg` the sidebar's section list is hidden, so every section heading opens this
- * bottom sheet instead (native popover: light dismiss, Esc, focus return for free).
+ * bottom sheet instead (native popover: light dismiss, Esc, focus return and the openers'
+ * aria-expanded for free).
+ * It also carries the theme/sound toggles, which scroll away with the hero on small screens.
  */
+import X from "@lucide/astro/icons/x";
+import SoundToggle from "@/components/SoundToggle.astro";
+import ThemeToggle from "@/components/ThemeToggle.astro";
+
 interface Props {
   sections: { id: string; label: string }[];
 }
@@ -18,7 +24,7 @@ const { sections } = Astro.props;
       popovertargetaction="hide"
       class="icon-btn size-8 rounded-lg"
       aria-label="Close">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+      <X />
     </button>
   </div>
   <ol class="grid gap-1">
@@ -27,41 +33,57 @@ const { sections } = Astro.props;
         <li>
           <a
             href={`#${s.id}`}
-            class="group/item flex items-center gap-3 rounded-xl px-3 py-3 text-lg font-medium text-muted hover:bg-chip hover:text-fg [&.active]:bg-chip [&.active]:text-fg">
+            class="group/item flex items-center gap-3 rounded-xl px-3 py-3 text-lg font-medium text-muted hover:bg-chip hover:text-fg current:bg-chip current:text-fg">
             <span class="w-6 font-mono text-xs text-muted">{String(i + 1).padStart(2, "0")}</span>
             {s.label}
-            <span class="ml-auto size-2 rounded-full bg-peach opacity-0 group-[.active]/item:opacity-100" aria-hidden="true" />
+            <span class="ml-auto size-2 rounded-full bg-peach opacity-0 group-current/item:opacity-100" aria-hidden="true" />
           </a>
         </li>
       ))
     }
   </ol>
+  <div class="mt-3 flex items-center gap-2.5 border-t border-line px-3 pt-4">
+    <p class="mr-auto eyebrow">Settings</p>
+    <ThemeToggle />
+    <SoundToggle />
+  </div>
 </nav>
 
 <script>
-  if (!("popover" in HTMLElement.prototype)) import("@oddbird/popover-polyfill");
+  import { jumpTo } from "@/scripts/jump";
 
   const sheet = document.getElementById("section-nav")!;
-  const smooth = matchMedia("(prefers-reduced-motion: no-preference)").matches;
   // Closing a popover returns focus to its opener, which would scroll back to that heading.
   // So close first, then jump and move focus to the target section without a second scroll.
   sheet.querySelectorAll<HTMLAnchorElement>("a[href^='#']").forEach((a) =>
     a.addEventListener("click", (e) => {
-      const target = document.querySelector<HTMLElement>(a.hash);
-      if (!target) return;
+      if (!document.querySelector(a.hash)) return;
       e.preventDefault();
       sheet.hidePopover();
-      history.pushState(null, "", a.hash);
-      target.scrollIntoView({ behavior: smooth ? "smooth" : "instant", block: "start" });
-      target.setAttribute("tabindex", "-1");
-      target.focus({ preventScroll: true });
+      jumpTo(a.hash);
     }),
   );
-  // keep the triggers' aria-expanded in sync (the polyfill doesn't)
-  sheet.addEventListener("toggle", (e) => {
-    const open = (e as ToggleEvent).newState === "open";
-    document.querySelectorAll('[popovertarget="section-nav"]:not([popovertargetaction])').forEach((b) => b.setAttribute("aria-expanded", String(open)));
-  });
+  // A tap on the dimmed backdrop closes the sheet (light dismiss), but a popover's ::backdrop
+  // doesn't catch the tap, so it would also hit whatever link/button sits underneath.
+  // Swallow the click that follows a pointerdown outside the open sheet.
+  let swallow = false;
+  document.addEventListener(
+    "pointerdown",
+    (e) => (swallow = sheet.matches(":popover-open") && !sheet.contains(e.target as Node)),
+    true,
+  );
+  document.addEventListener("pointercancel", () => (swallow = false), true); // e.g. turned into a scroll
+  document.addEventListener(
+    "click",
+    (e) => {
+      if (!swallow) return;
+      swallow = false;
+      e.preventDefault();
+      e.stopPropagation();
+    },
+    true,
+  );
+
 </script>
 
 <style>
@@ -85,7 +107,7 @@ const { sections } = Astro.props;
     transition-timing-function: cubic-bezier(0.2, 0.9, 0.3, 1);
     transition-behavior: allow-discrete;
   }
-  #section-nav:is(:popover-open, .\:popover-open) {
+  #section-nav:popover-open {
     translate: 0 0;
     @starting-style { translate: 0 100%; }
   }

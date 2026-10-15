@@ -1,54 +1,62 @@
 @import "tailwindcss";
 
-/* `dark:` follows the resolved mode (explicit toggle or OS), set on <html data-mode> by Base.astro */
-@custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
+/* sidebar + sheet section links: the link whose section is in view (native :target-current
+   via `scroll-target-group`, or the .active class Sidebar.astro's fallback spy sets).
+   :is() is forgiving, so browsers that don't know :target-current still match .active */
+@custom-variant current (&:is(.active, :target-current));
 
-/* ---------- design tokens (dark-first) ---------- */
+/* ---------- design tokens ----------
+   Each pair is light-dark(light, dark), resolved by `color-scheme`: the OS preference by default,
+   pinned by <html data-theme> when the visitor overrides it. */
 :root {
-  --bg: #0e1320;
-  --surface: #151c2c;
-  --line: #263049;
-  --fg: #dde3ee;
-  --muted: #8a95ab;
-  --peach: #e9d2bb;
-  --peri: #adbbd6;
-  --accent-ink: #1a1410;
-  --glow: rgb(173 187 214 / 0.1);
-  --chip-bg: rgb(173 187 214 / 0.12);
-  --chip-fg: #c4cfe4;
-  color-scheme: dark;
+  color-scheme: light dark;
+  --bg: light-dark(#f2f4f8, #0e1320);
+  --surface: light-dark(#ffffff, #151c2c);
+  --hover: light-dark(#e9edf4, #0b0f1a); /* hovered cards sit a touch darker than the page, not lighter */
+  --line: light-dark(#d6dce8, #263049);
+  --fg: light-dark(#172033, #dde3ee);
+  --muted: light-dark(#5a6479, #8a95ab);
+  --peach: light-dark(#9a5c30, #e9d2bb); /* light value holds 4.5:1 for text on bg, surface and hover */
+  --peri: light-dark(#4a5f94, #adbbd6);
+  --link: light-dark(#2f55c4, #8fb0ff);
+  --accent-ink: light-dark(#ffffff, #1a1410);
+  --glow: light-dark(rgb(74 95 148 / 0.08), rgb(173 187 214 / 0.1));
+  --chip-bg: light-dark(rgb(74 95 148 / 0.1), rgb(173 187 214 / 0.12));
+  --chip-fg: light-dark(#3d4f7d, #c4cfe4);
+  /* the monogram's two colours (Logo, Watermark); the same in both modes */
+  --brand-blue: #75a6f1;
+  --brand-tan: #d9ad84;
 }
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    --bg: #f2f4f8; --surface: #ffffff; --line: #d6dce8;
-    --fg: #172033; --muted: #5a6479; --peach: #a8683a; --peri: #4a5f94;
-    --accent-ink: #ffffff; --glow: rgb(74 95 148 / 0.08);
-    --chip-bg: rgb(74 95 148 / 0.1); --chip-fg: #3d4f7d;
-    color-scheme: light;
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+/* browsers without light-dark() (Safari < 17.5) would get no colours at all, so give them the
+   dark palette; the theme toggle doesn't change anything there */
+@supports not (color: light-dark(#000, #fff)) {
+  :root {
+    --bg: #0e1320; --surface: #151c2c; --hover: #0b0f1a; --line: #263049;
+    --fg: #dde3ee; --muted: #8a95ab; --peach: #e9d2bb; --peri: #adbbd6; --link: #8fb0ff;
+    --accent-ink: #1a1410; --glow: rgb(173 187 214 / 0.1);
+    --chip-bg: rgb(173 187 214 / 0.12); --chip-fg: #c4cfe4;
+    color-scheme: dark;
   }
-}
-:root[data-theme="light"] {
-  --bg: #f2f4f8; --surface: #ffffff; --line: #d6dce8;
-  --fg: #172033; --muted: #5a6479; --peach: #a8683a; --peri: #4a5f94;
-  --accent-ink: #ffffff; --glow: rgb(74 95 148 / 0.08);
-  --chip-bg: rgb(74 95 148 / 0.1); --chip-fg: #3d4f7d;
-  color-scheme: light;
 }
 
 /* expose the tokens as Tailwind utilities: bg-surface, text-muted, border-line, text-peach, font-display … */
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
+  --color-hover: var(--hover);
   --color-line: var(--line);
   --color-fg: var(--fg);
   --color-muted: var(--muted);
   --color-peach: var(--peach);
   --color-peri: var(--peri);
+  --color-link: var(--link);
   --color-accent-ink: var(--accent-ink);
   --color-chip: var(--chip-bg);
   --color-chip-fg: var(--chip-fg);
 
-  --font-display: var(--font-caprasimo);
+  --font-display: var(--font-fraunces);
   --font-sans: var(--font-sora);
   --font-mono: var(--font-geist-mono);
 
@@ -63,11 +71,15 @@
   html { scrollbar-gutter: stable; }
   body {
     @apply bg-bg font-sans text-base/relaxed text-fg antialiased;
+    /* viewport-fit=cover (Base.astro) lets the page run under a notch in landscape; keep content clear of it */
+    padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
     transition: background-color 0.4s ease, color 0.4s ease;
   }
   ::selection { background: var(--peach); color: var(--accent-ink); }
   :focus-visible { outline: 2px solid var(--peri); outline-offset: 3px; border-radius: 6px; }
   h1, h2, h3 { text-wrap: balance; }
+  /* native scrollspy: the browser tracks which of these links' sections is in view (:target-current) */
+  [data-toc] ol { scroll-target-group: auto; }
 }
 /* Smooth only while something inside has focus (i.e. after clicking an in-page link).
    A plain `html { scroll-behavior: smooth }` also animates the browser's scroll restoration,
@@ -83,21 +95,48 @@
 @media (prefers-reduced-motion: reduce) {
   @view-transition { navigation: none; }
 }
-::view-transition-group(*.project-thumb),
-::view-transition-group(*.project-title) {
-  animation-duration: 0.42s;
-  animation-timing-function: cubic-bezier(0.2, 0.9, 0.3, 1);
+/* one knob for the whole thing: morphs run --vt-dur, the page crossfade a bit quicker */
+:root {
+  --vt-dur: 0.28s;
+  --vt-ease: cubic-bezier(0.2, 0, 0, 1);
 }
-/* scale text snapshots by height only so titles don't stretch while they change size */
+::view-transition-group(*) {
+  animation-duration: var(--vt-dur);
+  animation-timing-function: var(--vt-ease);
+}
+/* scale text snapshots by height only (width follows the aspect ratio) so titles grow
+   without stretching; object-fit must stay default or the snapshot won't scale at all */
 ::view-transition-old(*.project-title),
 ::view-transition-new(*.project-title) {
   height: 100%;
   width: auto;
-  object-fit: none;
-  object-position: left center;
 }
-::view-transition-old(root) { animation: 0.2s ease-out both rf-fade-out; }
-::view-transition-new(root) { animation: 0.3s ease-out 0.05s both rf-fade-in; }
+/* thumbnails change shape (square app icon / 16:10 card → wide hero), so fill the morphing
+   box and crop instead of letting the default width-only scaling spill past its bottom */
+::view-transition-group(*.project-thumb) {
+  overflow: clip;
+  border-radius: 12px; /* fallback; Base.astro animates it from the old element's radius to the new one's */
+}
+::view-transition-old(*.project-thumb),
+::view-transition-new(*.project-thumb) {
+  height: 100%;
+  object-fit: cover;
+}
+/* carousel lightbox: the slide grows into the full-screen preview and shrinks back.
+   Other named elements would float above the dimming backdrop, so they're unnamed meanwhile. */
+html[data-lightbox-morph] * { view-transition-name: none !important; }
+html[data-lightbox-morph] .lightbox-vt { view-transition-name: lightbox-media !important; }
+::view-transition-old(lightbox-media),
+::view-transition-new(lightbox-media) {
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+::view-transition-old(root) { animation: calc(var(--vt-dur) * 0.5) ease-out both rf-fade-out; }
+::view-transition-new(root) { animation: calc(var(--vt-dur) * 0.75) ease-out calc(var(--vt-dur) * 0.1) both rf-fade-in; }
+/* prev/next between projects: header and nav stay where they are, so a plain crossfade (no slide) */
+html:active-view-transition-type(between-projects)::view-transition-new(root) { animation-name: rf-fade-in-flat; }
+@keyframes rf-fade-in-flat { from { opacity: 0; } }
 @keyframes rf-fade-out { to { opacity: 0; } }
 @keyframes rf-fade-in { from { opacity: 0; translate: 0 8px; } }
 
@@ -105,17 +144,46 @@
 @utility eyebrow {
   @apply font-mono text-xs font-medium tracking-[0.14em] text-muted uppercase;
 }
+/* the smaller, wider-tracked sibling of eyebrow: Problem/Decision/Impact, Previous/Next */
+@utility label {
+  @apply font-mono text-[11px] font-medium tracking-[0.1em] uppercase;
+}
 @utility chip {
   @apply rounded-full bg-chip px-2.5 py-1.5 font-mono text-xs leading-none font-medium text-chip-fg;
 }
+/* `will-change` keeps these on their own compositor layer at rest too. Otherwise Chrome
+   (notably on Windows) promotes the element only while the transform animates, and when the
+   hover-out transition ends it drops the layer and re-rasters the text with different
+   antialiasing — which reads as the text going bold and then snapping back. */
 @utility spring {
   transition-timing-function: var(--ease-spring);
+  will-change: translate, rotate, scale;
 }
+/* cards that rise and tilt a touch on hover; the colour changes ease out, the movement springs */
+@utility lift {
+  transition: translate 500ms var(--ease-spring), rotate 500ms var(--ease-spring), background-color 300ms ease-out,
+    border-color 300ms ease-out, box-shadow 300ms ease-out, opacity 300ms ease-out;
+  will-change: translate; /* see `spring` */
+}
+/* Reduced motion: hovered (and pressed) cards, buttons and arrows stay put instead of lifting,
+   tilting or nudging; colour, border and shadow changes still show the hover. Unlayered, so it
+   beats the hover:/group-hover: translate, rotate and scale utilities. Every `spring`,
+   `lift` and `icon-btn` transform is a hover/press effect, so nothing else is switched off. */
+@media (prefers-reduced-motion: reduce) {
+  .spring, .lift, .icon-btn { translate: none; rotate: none; scale: none; }
+}
+
 /* square sidebar buttons (GitHub, LinkedIn, theme, sound) */
 @utility icon-btn {
   @apply inline-grid size-10 cursor-pointer place-items-center rounded-xl border border-line bg-surface text-muted;
   transition: translate 0.45s var(--ease-spring), color 0.2s, border-color 0.2s;
-  &:hover { @apply -translate-y-[3px] border-peri text-fg; }
+  will-change: translate, scale; /* see `spring` */
+  /* mouse only: a tap leaves :hover stuck on touch screens until you tap elsewhere */
+  @media (hover: hover) {
+    &:hover { @apply -translate-y-[3px] border-peri text-fg; }
+  }
   &:active { @apply translate-y-0 scale-[0.92]; }
+  /* stays hoverable for the not-allowed cursor, but without the lift and highlight */
+  &:disabled { opacity: 0.35; cursor: not-allowed; translate: none; scale: none; border-color: var(--line); color: var(--muted); }
   & svg { @apply size-[18px]; }
 }

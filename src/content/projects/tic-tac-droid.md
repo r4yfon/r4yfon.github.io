@@ -2,23 +2,25 @@
 title: "TicTacDroid"
 slug: tic-tac-droid
 date: "2025-04"
-description: "A Tic Tac Toe game for Android devices made with Kotlin (XML-based UI)."
+description: "Two-player Tic Tac Toe for Android, built with Kotlin and XML layouts."
 kind: android
 role: "Solo"
 tags: [Kotlin, XML layouts]
 repo: https://github.com/r4yfon/tic-tac-droid
+decision: "Started with classic XML views to learn Android's state and lifecycle before reaching for a modern toolkit."
 ---
 
-TicTacDroid is a classic Tic Tac Toe game designed for Android devices. Built with Kotlin and an XML-based user interface, it offers a simple and engaging way to play the timeless game on mobile.
+TicTacDroid is two-player Tic Tac Toe on a single Android device. I built it for Android App Development while on exchange at Koç University, Istanbul: the first of three apps, each adding a new layer of the platform.
+
+The game itself is deliberately small. The point was to learn how Android handles views, state and the activity lifecycle with classic XML layouts, before moving to Jetpack Compose in the next app.
 
 ## Features
 
-- Play against another player on the same device
-- Intuitive and responsive touch controls
-- Clean and minimalistic UI
-- Instant win/draw detection
-- Game reset functionality
+- Two players take turns on the same device
+- A win or draw is detected after every move
+- Reset to start a new game
 
-## Technologies Used
+## Tech stack
 
-- Kotlin (XML-based UI)
+- Kotlin
+- XML layouts (Android Views)

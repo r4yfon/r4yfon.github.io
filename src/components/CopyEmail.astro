@@ -7,27 +7,31 @@ import { site } from "@/data/site";
   <button
     class="copy-btn spring cursor-pointer rounded-lg border border-line bg-surface px-2.5 py-1.5 text-xs font-medium text-muted transition duration-400 hover:-translate-y-0.5 hover:text-fg"
     type="button">copy</button>
+  <span class="sr-only" aria-live="polite"></span>
 </div>
 
 <script>
-  import { blip } from "@/scripts/sound";
+  import { COPIED_MS, copyText } from "@/scripts/clipboard";
 
   for (const btn of document.querySelectorAll<HTMLButtonElement>(".copy-btn")) {
     const email = btn.parentElement!.querySelector(".email")!;
+    // a button's own text changing isn't reliably announced, so say it here too
+    const status = btn.parentElement!.querySelector("[aria-live]")!;
     btn.addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(email.textContent!.trim());
-        btn.textContent = "copied ✓";
-        btn.classList.add("text-peach", "border-peach");
-        blip(990);
-        setTimeout(() => {
-          btn.textContent = "copy";
-          btn.classList.remove("text-peach", "border-peach");
-        }, 1600);
-      } catch {
+      if (!(await copyText(email.textContent!.trim()))) {
+        // the address is on screen, so select it for a manual copy
         getSelection()?.selectAllChildren(email);
-        btn.textContent = "press Ctrl/⌘+C";
+        btn.textContent = status.textContent = "press Ctrl/⌘+C";
+        return;
       }
+      btn.textContent = "copied ✓";
+      status.textContent = "Email address copied";
+      btn.classList.add("text-peach", "border-peach");
+      setTimeout(() => {
+        btn.textContent = "copy";
+        status.textContent = "";
+        btn.classList.remove("text-peach", "border-peach");
+      }, COPIED_MS);
     });
   }
 </script>

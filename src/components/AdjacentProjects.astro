@@ -1,0 +1,53 @@
+---
+/**
+ * Previous / next project links. Full cards under the header on phones and again at the end of
+ * every project page; `compact` pills in the desktop header.
+ */
+import ArrowLeft from "@lucide/astro/icons/arrow-left";
+import ArrowRight from "@lucide/astro/icons/arrow-right";
+import type { Project } from "@/lib/projects";
+
+interface Props {
+  prev: Project;
+  next: Project;
+  compact?: boolean;
+  class?: string;
+  /** distinct per copy, since both can be on screen readers' landmark list at once */
+  label?: string;
+}
+const { prev, next, compact = false, class: className, label = "Adjacent projects" } = Astro.props;
+// "next" is laid out reversed (arrow on the right); the arrow is aria-hidden, so reading order is unchanged
+const links = [
+  { project: prev, rel: "prev", dir: "Previous", Arrow: ArrowLeft, nudge: "group-hover/adj:-translate-x-1" },
+  { project: next, rel: "next", dir: "Next", Arrow: ArrowRight, nudge: "group-hover/adj:translate-x-1" },
+];
+---
+
+<nav aria-label={label} class:list={[compact ? "gap-2" : "grid grid-cols-2 gap-3", className]}>
+  {
+    links.map(({ project, rel, dir, Arrow, nudge }) => (
+      <a
+        href={`/projects/${project.id}/`}
+        rel={rel}
+        data-blip
+        class:list={[
+          "group/adj flex min-w-0 items-center border border-line bg-surface hover:border-peri",
+          compact ? "max-w-56 gap-2 rounded-xl px-3 py-2 text-sm font-medium" : "gap-3 rounded-2xl px-4 py-3",
+          rel === "next" && "flex-row-reverse text-right",
+        ]}>
+        <Arrow class={`spring size-4 shrink-0 text-muted transition-transform duration-450 ${nudge}`} />
+        {compact ? (
+          <>
+            <span class="sr-only">{dir}: </span>
+            <span class="truncate">{project.data.title}</span>
+          </>
+        ) : (
+          <span class="min-w-0">
+            <span class="label block text-muted">{dir}</span>
+            <span class="block truncate text-sm font-medium">{project.data.title}</span>
+          </span>
+        )}
+      </a>
+    ))
+  }
+</nav>

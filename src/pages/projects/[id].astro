@@ -2,96 +2,163 @@
 import ArrowLeft from "@lucide/astro/icons/arrow-left";
 import ArrowUpRight from "@lucide/astro/icons/arrow-up-right";
 import { render } from "astro:content";
-import Carousel from "@/components/Carousel.astro";
+import AdjacentProjects from "@/components/AdjacentProjects.astro";
+import Carousel, { type Slide } from "@/components/Carousel.astro";
 import Dock from "@/components/Dock.astro";
 import Logo from "@/components/Logo.astro";
 import ProjectThumb from "@/components/ProjectThumb.astro";
 import SoundToggle from "@/components/SoundToggle.astro";
 import ThemeToggle from "@/components/ThemeToggle.astro";
+import Watermark from "@/components/Watermark.astro";
 import Base from "@/layouts/Base.astro";
-import { captionFromFile, formatMonth, getProjects, projectMedia, type Project } from "@/lib/projects";
+import { aspectOf, captionFromFile, formatMonth, getProjects, projectMedia, projectStory, vt, type Project } from "@/lib/projects";
 
 export async function getStaticPaths() {
   const projects = await getProjects();
-  return projects.map((project) => ({ params: { id: project.id }, props: { project } }));
+  // neighbours wrap around, so every project page has both a previous and a next
+  return projects.map((project, i) => ({
+    params: { id: project.id },
+    props: {
+      project,
+      adjacent:
+        projects.length > 1
+          ? { prev: projects[(i - 1 + projects.length) % projects.length], next: projects[(i + 1) % projects.length] }
+          : undefined,
+    },
+  }));
 }
 
 interface Props {
   project: Project;
+  adjacent?: { prev: Project; next: Project };
 }
-const { project } = Astro.props;
+const { project, adjacent } = Astro.props;
 const { id, data } = project;
 const { Content } = await render(project);
 const media = projectMedia(id);
-const pdi = [
-  ["Problem", data.problem],
-  ["Decision", data.decision],
-  ["Impact", data.impact],
-].filter((row): row is [string, string] => Boolean(row[1]));
+// thumbnail, recording and screenshots share one carousel, so the hero isn't followed by a repeat of itself
+const slides: Slide[] = await Promise.all(
+  [
+    ...(media.thumbnail ? [{ src: media.thumbnail, caption: "Overview" }] : []),
+    ...(media.video ? [{ src: media.video, caption: "Demo recording", video: true }] : []),
+    ...media.screenshots.map((src) => ({ src, caption: captionFromFile(src) })),
+  ].map(async (s) => ({ ...s, aspect: await aspectOf(s.src) })),
+);
+const story = projectStory(data);
+// shown twice: under the title below lg, at the top of the sticky aside on desktop
+const links = [
+  data.demo && { href: data.demo, text: "Live demo", primary: true },
+  data.repo && { href: data.repo, text: "Source", primary: false },
+].filter((l) => !!l);
 ---
 
 <Base title={data.title} description={data.description} expect="project-hero">
-  <div class="relative z-1 mx-auto max-w-3xl px-[clamp(16px,5vw,48px)] pt-10 pb-32">
-    <nav data-hero class="flex items-center justify-between gap-4">
+  <Watermark />
+  <div class="relative z-1 mx-auto max-w-3xl px-[clamp(16px,5vw,48px)] pt-10 pb-32 lg:max-w-6xl">
+    <header data-hero class="flex items-center justify-between gap-4">
       <div class="flex items-center gap-4">
         <Logo size={40} intro={false} href="/" />
-        <a href="/#projects" class="group/back inline-flex items-center gap-1.5 font-mono text-xs font-medium tracking-[0.14em] text-muted uppercase hover:text-fg">
-          <ArrowLeft class="spring size-3.5 transition-transform duration-450 group-hover/back:-translate-x-1" aria-hidden="true" /> All projects
+        <a href={`/#project-${id}`} data-back-home class="group/back eyebrow inline-flex items-center gap-1.5 hover:text-fg">
+          <ArrowLeft class="spring size-3.5 transition-transform duration-450 group-hover/back:-translate-x-1" /> All projects
         </a>
       </div>
-      <div class="flex gap-2.5"><ThemeToggle /><SoundToggle /></div>
-    </nav>
-
-    <header id="project-hero" class="mt-12 grid gap-6">
-      <div>
-        <p class="eyebrow">{formatMonth(data.date)} · {data.role}</p>
-        <h1 class="mt-3 font-display text-[clamp(2.2rem,6vw,3.4rem)] leading-[1.05]">
-          <span class="inline-block" style={`view-transition-name: title-${id}; view-transition-class: project-title`}>{data.title}</span>
-        </h1>
-        <p class="mt-3 max-w-[60ch] text-lg text-muted">{data.description}</p>
+      <div class="flex items-center gap-2.5">
+        {adjacent && <AdjacentProjects {...adjacent} compact class="mr-2 hidden lg:flex" />}
+        <ThemeToggle /><SoundToggle />
       </div>
-      {data.tags.length > 0 && <div class="flex flex-wrap gap-1.5">{data.tags.map((t) => <span class="chip">{t}</span>)}</div>}
-      <div class="-mt-2 flex flex-wrap items-center gap-2.5">
-        {data.demo && <a class="inline-flex items-center gap-1.5 rounded-xl bg-peach px-4 py-2 text-sm font-semibold text-accent-ink" href={data.demo} target="_blank" rel="noopener noreferrer">Live demo <ArrowUpRight class="size-4" aria-hidden="true" /></a>}
-        {data.repo && <a class="inline-flex items-center gap-1.5 rounded-xl border border-line bg-surface px-4 py-2 text-sm font-medium hover:border-peri" href={data.repo} target="_blank" rel="noopener noreferrer">Source <ArrowUpRight class="size-4" aria-hidden="true" /></a>}
-      </div>
-      <ProjectThumb project={project} class={media.thumbnail ? "" : "aspect-[16/7]"} eager />
     </header>
 
-    {
-      pdi.length > 0 && (
-        <dl class="mt-10 grid gap-4 rounded-2xl border border-line bg-surface p-6 sm:grid-cols-3">
-          {pdi.map(([term, text]) => (
-            <div>
-              <dt class:list={["font-mono text-[11px] font-medium tracking-[0.1em] uppercase", term === "Impact" ? "text-peach" : "text-peri"]}>{term}</dt>
-              <dd class="mt-1.5 text-[0.95rem] text-muted">{text}</dd>
+    {adjacent && <AdjacentProjects {...adjacent} class="mt-8 lg:hidden" />}
+
+    <main id="main" tabindex="-1" class="outline-none">
+      <!-- image first, like the cards and app icons it morphs from, so image and title don't cross mid-transition -->
+      <header id="project-hero" class="mt-10 grid gap-6">
+        {
+          slides.length > 0 ? (
+            // only morph from the card when the carousel opens on the same image; otherwise the two just crossfade
+            <Carousel label={`${data.title} media`} slides={slides} transitionName={media.thumbnail ? vt.thumb(id) : undefined} transitionClass="project-thumb" />
+          ) : (
+            <ProjectThumb project={project} class="aspect-[16/7]" eager />
+          )
+        }
+        <div>
+          <p class="eyebrow">{formatMonth(data.date)} · {data.role}</p>
+          <h1 class="mt-3 font-display text-[clamp(2.2rem,6vw,3.4rem)] leading-[1.05]">
+            <span class="inline-block" style={vt.title(id)}>{data.title}</span>
+          </h1>
+          <p class="mt-3 max-w-[60ch] text-lg text-muted">{data.description}</p>
+        </div>
+        {data.tags.length > 0 && <div class="flex flex-wrap gap-1.5 lg:hidden">{data.tags.map((t) => <span class="chip">{t}</span>)}</div>}
+        {
+          links.length > 0 && (
+            <div class="-mt-2 flex flex-wrap items-center gap-2.5 lg:hidden">
+              {links.map((l) => (
+                <a class:list={["inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm", l.primary ? "bg-peach font-semibold text-accent-ink" : "border border-line bg-surface font-medium hover:border-peri"]} href={l.href} target="_blank" rel="noopener noreferrer">
+                  {l.text} <ArrowUpRight class="size-4" />
+                </a>
+              ))}
             </div>
-          ))}
-        </dl>
-      )
-    }
+          )
+        }
+      </header>
 
-    <article class="prose mt-10">
-      <Content />
-    </article>
+      <!-- desktop: prose left, sticky aside right. Below lg only Problem/Decision/Impact show in the aside, above the prose -->
+      <div class="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-16">
+        <aside class="grid content-start gap-6 lg:sticky lg:top-8 lg:col-start-2 lg:row-start-1 lg:self-start">
+          {
+            links.length > 0 && (
+              <div class="hidden gap-2.5 lg:grid">
+                {links.map((l) => (
+                  <a class:list={["inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-sm", l.primary ? "bg-peach font-semibold text-accent-ink" : "border border-line bg-surface font-medium hover:border-peri"]} href={l.href} target="_blank" rel="noopener noreferrer">
+                    {l.text} <ArrowUpRight class="size-4" />
+                  </a>
+                ))}
+              </div>
+            )
+          }
+          {data.tags.length > 0 && <div class="hidden flex-wrap gap-1.5 lg:flex">{data.tags.map((t) => <span class="chip">{t}</span>)}</div>}
+          {
+            story.length > 0 && (
+              <dl class="grid gap-4 rounded-2xl border border-line bg-surface p-6 sm:grid-cols-3 lg:grid-cols-1 lg:gap-5 lg:p-5">
+                {story.map(({ term, text, highlight }) => (
+                  <div>
+                    <dt class:list={["label", highlight ? "text-peach" : "text-peri"]}>{term}</dt>
+                    <dd class="mt-1.5 text-[0.95rem] text-muted">{text}</dd>
+                  </div>
+                ))}
+              </dl>
+            )
+          }
+        </aside>
 
-    {
-      media.video && (
-        <video class="mt-10 w-full rounded-2xl border border-line" src={media.video} controls muted playsinline preload="metadata" />
-      )
-    }
+        <article class="prose lg:col-start-1 lg:row-start-1">
+          <Content />
+        </article>
+      </div>
+    </main>
 
-    {
-      media.screenshots.length > 0 && (
-        <section class="mt-10">
-          <h2 class="eyebrow mb-4">Screens</h2>
-          <Carousel label={`${data.title} screenshots`} slides={media.screenshots.map((src) => ({ src, caption: captionFromFile(src) }))} />
-        </section>
-      )
-    }
+    <!-- the header's pair has scrolled away by the time you've read to the end -->
+    {adjacent && <AdjacentProjects {...adjacent} label="More projects" class="mt-16 border-t border-line pt-8" />}
   </div>
-  <Dock desktop pinnedOnSmall />
+  <Dock back={`/#project-${id}`} desktop pinnedOnSmall />
 </Base>
+
+<script>
+  // Arriving straight from the homepage, "All projects" goes back through history instead, so the
+  // browser restores exactly where you were. Otherwise the link's #project-… anchor lands on this
+  // project's entry in the grid.
+  // (Navigation API; without it the anchor alone still does the job)
+  type Entry = { url: string | null; index: number };
+  const nav = (window as { navigation?: { currentEntry: Entry | null; entries(): Entry[] } }).navigation;
+  for (const a of document.querySelectorAll<HTMLAnchorElement>("[data-back-home]"))
+    a.addEventListener("click", (e) => {
+      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || !nav?.currentEntry) return;
+      const prev = nav.entries()[nav.currentEntry.index - 1];
+      if (!prev?.url || new URL(prev.url).pathname !== "/") return;
+      e.preventDefault();
+      history.back();
+    });
+</script>
 
 <style>
   /* Markdown body: rendered HTML has no scope attributes, so style it through :global */

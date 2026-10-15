@@ -1,93 +1,538 @@
 ---
 /**
- * Screenshot carousel: a horizontal scroll-snap track, so swiping, trackpads and
- * keyboard scrolling work natively. Prev/next buttons and the counter are layered on top.
- * Each slide opens the full-size image in a new tab.
+ * Media carousel: a horizontal scroll-snap track, so swiping, trackpads and
+ * keyboard scrolling work natively. Prev/next buttons and the counter are layered on top, plus a
+ * scrollbar-like scrubber (one tick per stop) whose thumb can be dragged to skim through quickly.
+ * Image slides open in a full-screen lightbox when clicked; video slides play inline (clicking
+ * them still plays/pauses) and get an expand button for the lightbox. The lightbox closes on
+ * its X, Esc, or a click anywhere outside the media. Images in the lightbox zoom: a click zooms to
+ * full resolution at that point (and back out), the wheel or a pinch zooms around the pointer,
+ * dragging pans, and +/−/0 or the bar's buttons zoom from the keyboard.
+ *
+ * Slides are sized by their aspect ratio in a 16:10 frame: runs of phone screens share it
+ * 2–3 up as a spread, and anything alone fills it. Prev/next step through stops (a whole
+ * spread, or a single slide); the lightbox always steps through single slides.
  */
 import ChevronLeft from "@lucide/astro/icons/chevron-left";
 import ChevronRight from "@lucide/astro/icons/chevron-right";
+import Maximize from "@lucide/astro/icons/maximize-2";
+import X from "@lucide/astro/icons/x";
+import ZoomIn from "@lucide/astro/icons/zoom-in";
+import ZoomOut from "@lucide/astro/icons/zoom-out";
+import { FRAME, fitSlides, planStops, stopCaption } from "@/lib/carousel";
 
-interface Props {
-  slides: { src: string; caption: string }[];
-  label: string;
+export interface Slide {
+  src: string;
+  caption: string;
+  video?: boolean;
+  /** width ÷ height; slides without one (videos, until their metadata loads) are treated as 16:10 */
+  aspect?: number;
 }
-const { slides, label } = Astro.props;
-const single = slides.length < 2;
+interface Props {
+  slides: Slide[];
+  label: string;
+  /** view-transition-name for the track, so a card's thumbnail can morph into it */
+  transitionName?: string;
+  /** a view-transition-class to go with it */
+  transitionClass?: string;
+}
+const { slides, label, transitionName, transitionClass } = Astro.props;
+const aspects = slides.map((s) => s.aspect ?? FRAME);
+const stops = planStops(aspects);
+const fits = fitSlides(aspects, stops);
+const captionOf = (stop: number[]) => stopCaption(stop.map((i) => slides[i].caption));
+const transition = transitionName ? `view-transition-name: ${transitionName}; view-transition-class: ${transitionClass ?? "none"}` : "";
+const single = stops.length < 2;
 ---
 
 <section class="carousel" aria-roledescription="carousel" aria-label={label}>
-  <ol class="track" tabindex="0" aria-label="Slides, scroll sideways for more">
-    {
-      slides.map((s, i) => (
-        <li class="slide" aria-roledescription="slide" aria-label={`${i + 1} of ${slides.length}: ${s.caption}`}>
-          <a href={s.src} target="_blank" rel="noopener noreferrer" class="block" aria-label={`Open full size: ${s.caption}`}>
-            <img src={s.src} alt={s.caption} loading={i === 0 ? "eager" : "lazy"} decoding="async" />
-          </a>
-        </li>
-      ))
-    }
-  </ol>
+  <div class="frame">
+    <ol class="track" tabindex="0" aria-label="Slides, scroll sideways for more" style={transition} data-vt-thumb={transitionName ? "" : undefined}>
+      {
+        slides.map((s, i) => (
+          <li
+            class="slide"
+            data-caption={s.caption}
+            data-aspect={aspects[i]}
+            data-start={fits[i].start || undefined}
+            data-end={fits[i].end || undefined}
+            data-fill={fits[i].fill || undefined}
+            style={`--ar: ${aspects[i]}; --n: ${fits[i].n}; --sum: ${fits[i].sum}${s.video ? "" : `; --shot: url("${s.src}")`}`}
+            aria-roledescription="slide"
+            aria-label={`${i + 1} of ${slides.length}: ${s.caption}`}
+          >
+            {s.video ? (
+              <>
+                <video class="media" src={s.src} controls muted playsinline preload="metadata" aria-label={s.caption} />
+                <button class="icon-btn expand" type="button" data-zoom aria-label={`View full screen: ${s.caption}`}><Maximize /></button>
+              </>
+            ) : (
+              <button class="zoom" type="button" data-zoom aria-label={`View full screen: ${s.caption}`}>
+                <img class="media" src={s.src} alt={s.caption} loading={i === 0 ? "eager" : "lazy"} decoding={i === 0 ? "sync" : "async"} fetchpriority={i === 0 ? "high" : undefined} />
+              </button>
+            )}
+          </li>
+        ))
+      }
+    </ol>
+  </div>
 
-  <div class="controls" hidden={single}>
-    <p class="caption" aria-live="polite"><span class="count">1 / {slides.length}</span> · <span class="text">{slides[0]?.caption}</span></p>
-    <div class="flex gap-2">
-      <button class="icon-btn prev" type="button" aria-label="Previous screenshot" disabled><ChevronLeft /></button>
-      <button class="icon-btn next" type="button" aria-label="Next screenshot"><ChevronRight /></button>
+  <div
+    class="scrub"
+    role="slider"
+    tabindex="0"
+    hidden={single}
+    aria-label="Scrub through slides"
+    aria-valuemin="1"
+    aria-valuemax={stops.length}
+    aria-valuenow="1"
+    aria-valuetext={`1 of ${stops.length}: ${captionOf(stops[0] ?? [])}`}
+    style={`--stops: ${stops.length}`}
+  >
+    <div class="rail">
+      {stops.map(() => <span class="tick" />)}
+      <span class="thumb" />
     </div>
   </div>
-  {single && <p class="caption mt-2">{slides[0]?.caption}</p>}
+
+  <div class="controls">
+    <p class="caption" aria-live="polite"><span class="count" hidden={single}>1 / {stops.length}</span><span class="text">{captionOf(stops[0] ?? [])}</span></p>
+    <div class="nav flex gap-2" hidden={single}>
+      <button class="icon-btn prev" type="button" aria-label="Previous slide" disabled><ChevronLeft /></button>
+      <button class="icon-btn next" type="button" aria-label="Next slide"><ChevronRight /></button>
+    </div>
+  </div>
+
+  <dialog class="lightbox" tabindex="-1" aria-label="Full-screen preview">
+    <div class="box-bar">
+      <button class="icon-btn box-zoom-out" type="button" aria-label="Zoom out" disabled><ZoomOut /></button>
+      <button class="icon-btn box-zoom-in" type="button" aria-label="Zoom in"><ZoomIn /></button>
+      {
+        slides.length > 1 && (
+          <>
+            <span class="box-count caption" aria-live="polite" />
+            <button class="icon-btn box-prev" type="button" aria-label="Previous slide"><ChevronLeft /></button>
+            <button class="icon-btn box-next" type="button" aria-label="Next slide"><ChevronRight /></button>
+          </>
+        )
+      }
+      <button class="icon-btn box-close" type="button" aria-label="Close preview"><X /></button>
+    </div>
+    <figure class="stage"><figcaption class="caption"></figcaption></figure>
+  </dialog>
 </section>
 
 <script>
+  import { fitSlides, planStops, stopCaption } from "@/lib/carousel";
+  import { reducedMotion } from "@/scripts/motion";
+
+  // Disabling the focused button would drop focus to the page, taking the arrow keys with it,
+  // so hand focus to its partner first.
+  const disablePair = (a: HTMLButtonElement, aOff: boolean, b: HTMLButtonElement, bOff: boolean) => {
+    const focused = document.activeElement;
+    a.disabled = aOff;
+    b.disabled = bOff;
+    if (focused === a && aOff) b.focus();
+    else if (focused === b && bOff) a.focus();
+  };
+
   for (const root of document.querySelectorAll<HTMLElement>(".carousel")) {
     const track = root.querySelector<HTMLElement>(".track")!;
     const slides = [...track.querySelectorAll<HTMLElement>(".slide")];
     const prev = root.querySelector<HTMLButtonElement>(".prev")!;
     const next = root.querySelector<HTMLButtonElement>(".next")!;
-    const count = root.querySelector(".count");
-    const text = root.querySelector(".text");
-    if (slides.length < 2) continue;
+    const nav = root.querySelector<HTMLElement>(".nav")!;
+    const count = root.querySelector<HTMLElement>(".count")!;
+    const text = root.querySelector(".text")!;
+    const scrub = root.querySelector<HTMLElement>(".scrub")!;
+    const rail = scrub.querySelector<HTMLElement>(".rail")!;
+    const thumb = scrub.querySelector<HTMLElement>(".thumb")!;
 
+    let stops: number[][] = [];
     let current = 0;
-    const update = (i: number) => {
-      current = i;
-      prev.disabled = i === 0;
-      next.disabled = i === slides.length - 1;
-      if (count) count.textContent = `${i + 1} / ${slides.length}`;
-      if (text) text.textContent = slides[i].querySelector("img")!.alt;
-    };
-    const go = (i: number) => {
-      const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-      track.scrollTo({ left: slides[i].offsetLeft - track.offsetLeft, behavior: reduce ? "instant" : "smooth" });
-    };
-    prev.addEventListener("click", () => go(Math.max(0, current - 1)));
-    next.addEventListener("click", () => go(Math.min(slides.length - 1, current + 1)));
+    let shown = -1; // the slide open in the lightbox, if any
+    const stopOf = (i: number) => Math.max(0, stops.findIndex((s) => s.includes(i)));
+    const clamp = (v: number) => Math.min(1, Math.max(0, v));
+    const maxScroll = () => track.scrollWidth - track.clientWidth;
 
-    // which slide is showing: native snap event where supported, IntersectionObserver otherwise
-    if ("onscrollsnapchange" in HTMLElement.prototype) {
-      track.addEventListener("scrollsnapchange", (e) => {
-        const target = (e as Event & { snapTargetInline: Element | null }).snapTargetInline;
-        const i = slides.indexOf(target as HTMLElement);
-        if (i >= 0) update(i);
+    // where the track scrolls to for each stop: its first slide at the start edge, less the
+    // scroll-margin that centres a spread. Measured on layout changes, not on every scroll frame
+    let targets: number[] = [];
+    const measure = () => {
+      targets = stops.map(([first]) => {
+        const s = slides[first];
+        return Math.min(maxScroll(), Math.max(0, s.offsetLeft - parseFloat(getComputedStyle(s).scrollMarginInlineStart)));
       });
-    } else {
-      const io = new IntersectionObserver(
-        (entries) => {
-          for (const entry of entries) if (entry.isIntersecting) update(slides.indexOf(entry.target as HTMLElement));
-        },
-        { root: track, threshold: 0.6 },
-      );
-      slides.forEach((s) => io.observe(s));
+    };
+    const nearest = () => {
+      const at = track.scrollLeft;
+      let best = 0;
+      for (let k = 1; k < targets.length; k++) if (Math.abs(targets[k] - at) < Math.abs(targets[best] - at)) best = k;
+      return best;
+    };
+    const go = (k: number, instant = false) => {
+      track.scrollTo({ left: targets[k], behavior: instant || reducedMotion() ? "instant" : "smooth" });
+      update(k);
+    };
+
+    const update = (k: number) => {
+      current = k;
+      const last = stops.length - 1;
+      const caption = stopCaption(stops[k].map((i) => slides[i].dataset.caption ?? ""));
+      disablePair(prev, k === 0, next, k === last);
+      count.textContent = `${k + 1} / ${stops.length}`;
+      text.textContent = caption;
+      scrub.setAttribute("aria-valuenow", String(k + 1));
+      scrub.setAttribute("aria-valuetext", `${k + 1} of ${stops.length}: ${caption}`);
+      // a recording keeps playing off-screen otherwise
+      slides.forEach((s, i) => !stops[k].includes(i) && s.querySelector("video")?.pause());
+    };
+
+    // regroup after a video reports its real shape; the server already rendered the same
+    // grouping, so on load this only picks up the starting state
+    const relayout = () => {
+      const keep = stops.length ? stops[current][0] : 0;
+      const aspects = slides.map((s) => Number(s.dataset.aspect));
+      stops = planStops(aspects);
+      fitSlides(aspects, stops).forEach((f, i) => {
+        const s = slides[i];
+        s.style.setProperty("--ar", String(aspects[i]));
+        s.style.setProperty("--n", String(f.n));
+        s.style.setProperty("--sum", String(f.sum));
+        s.toggleAttribute("data-start", f.start);
+        s.toggleAttribute("data-end", f.end);
+        s.toggleAttribute("data-fill", f.fill);
+      });
+      const single = stops.length < 2;
+      scrub.hidden = nav.hidden = count.hidden = single;
+      scrub.style.setProperty("--stops", String(stops.length));
+      scrub.setAttribute("aria-valuemax", String(stops.length));
+      rail.replaceChildren(...stops.map(() => Object.assign(document.createElement("span"), { className: "tick" })), thumb);
+      measure();
+      go(stopOf(keep), true);
+    };
+    relayout();
+    // slides are sized off the frame's width, so the stops move when it does
+    new ResizeObserver(measure).observe(track);
+    for (const [i, s] of slides.entries()) {
+      const video = s.querySelector("video");
+      video?.addEventListener("loadedmetadata", () => {
+        const aspect = video.videoWidth / video.videoHeight;
+        if (!aspect || Math.abs(aspect - Number(s.dataset.aspect)) < 0.01) return;
+        s.dataset.aspect = String(aspect);
+        if (shown !== i) relayout();
+      });
     }
+
+    // full-screen preview: a modal <dialog>, so Esc and focus trapping come for free
+    const box = root.querySelector<HTMLDialogElement>(".lightbox")!;
+    const stage = box.querySelector<HTMLElement>(".stage")!;
+    const boxCaption = stage.querySelector("figcaption")!;
+    const boxCount = box.querySelector(".box-count");
+    const boxPrev = box.querySelector<HTMLButtonElement>(".box-prev");
+    const boxNext = box.querySelector<HTMLButtonElement>(".box-next");
+    const zoomIn = box.querySelector<HTMLButtonElement>(".box-zoom-in")!;
+    const zoomOut = box.querySelector<HTMLButtonElement>(".box-zoom-out")!;
+    let source: HTMLVideoElement | null = null;
+
+    // zoom: a scale and pan applied to the preview image as a transform, scaled about its centre
+    let z = { s: 1, x: 0, y: 0 };
+    const resetZoom = () => (z = { s: 1, x: 0, y: 0 });
+    const image = () => stage.querySelector<HTMLImageElement>("img.full");
+    // how far it goes: at least 4×, or twice its full resolution for a big screenshot
+    const maxScale = (el: HTMLImageElement) => Math.max(4, (2 * el.naturalWidth) / el.offsetWidth || 0);
+    // where the image sits unzoomed: its layout box, which transforms don't move
+    const centre = (el: HTMLImageElement) => {
+      const p = (el.offsetParent ?? box).getBoundingClientRect();
+      return [p.left + el.offsetLeft + el.offsetWidth / 2, p.top + el.offsetTop + el.offsetHeight / 2];
+    };
+    // along one axis, a zoomed image bigger than the screen can pan until its edge meets the
+    // screen's; one that still fits stays put
+    const bound = (t: number, c: number, size: number, view: number) => {
+      const half = (size * z.s) / 2;
+      return 2 * half <= view ? 0 : Math.min(half - c, Math.max(view - c - half, t));
+    };
+    const render = (el: HTMLImageElement, smooth: boolean) => {
+      if (z.s <= 1.001) resetZoom();
+      const [cx, cy] = centre(el);
+      z.x = bound(z.x, cx, el.offsetWidth, box.clientWidth);
+      z.y = bound(z.y, cy, el.offsetHeight, box.clientHeight);
+      el.style.transform = z.s === 1 ? "" : `translate(${z.x}px, ${z.y}px) scale(${z.s})`;
+      el.classList.toggle("smooth", smooth);
+      el.classList.toggle("zoomed", z.s > 1);
+      disablePair(zoomOut, z.s === 1, zoomIn, z.s >= maxScale(el) - 0.001);
+    };
+    // zoom to scale s, keeping the point (px, py) on screen where it is
+    const zoomTo = (el: HTMLImageElement, s: number, px: number, py: number, smooth: boolean) => {
+      s = Math.min(maxScale(el), Math.max(1, s));
+      const [cx, cy] = centre(el);
+      z.x = px - cx - ((px - cx - z.x) * s) / z.s;
+      z.y = py - cy - ((py - cy - z.y) * s) / z.s;
+      z.s = s;
+      render(el, smooth);
+    };
+    const zoomBy = (f: number) => {
+      const el = image();
+      if (el) zoomTo(el, z.s * f, box.clientWidth / 2, box.clientHeight / 2, true);
+    };
+    const unzoom = () => {
+      const el = image();
+      if (!el) return;
+      resetZoom();
+      render(el, true);
+    };
+    zoomIn.addEventListener("click", () => zoomBy(1.6));
+    zoomOut.addEventListener("click", () => zoomBy(1 / 1.6));
+    box.addEventListener(
+      "wheel",
+      (e) => {
+        const el = image();
+        if (!el) return;
+        e.preventDefault();
+        // a trackpad pinch arrives as ctrl + wheel, in much smaller steps
+        const delta = e.deltaY * (e.deltaMode === 1 ? 16 : 1);
+        zoomTo(el, z.s * Math.exp(-delta * (e.ctrlKey ? 0.01 : 0.002)), e.clientX, e.clientY, false);
+      },
+      { passive: false },
+    );
+    window.addEventListener("resize", () => {
+      const el = image();
+      if (box.open && el) render(el, false);
+    });
+
+    // one pointer pans, two pinch; a press that barely moves is a click, which toggles zoom
+    const pointers = new Map<number, { x: number; y: number }>();
+    let pressed = { x: 0, y: 0 };
+    let moved = false;
+    stage.addEventListener("pointerdown", (e) => {
+      const el = image();
+      if (!el || e.target !== el || e.button !== 0) return;
+      e.preventDefault(); // no native image drag
+      el.setPointerCapture(e.pointerId);
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pointers.size === 1) {
+        pressed = { x: e.clientX, y: e.clientY };
+        moved = false;
+      } else moved = true;
+    });
+    stage.addEventListener("pointermove", (e) => {
+      const el = image();
+      const last = pointers.get(e.pointerId);
+      if (!el || !last) return;
+      if (pointers.size === 1) {
+        if (!moved && Math.hypot(e.clientX - pressed.x, e.clientY - pressed.y) < 5) return;
+        moved = true;
+        pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (z.s === 1) return;
+        el.classList.add("dragging");
+        z.x += e.clientX - last.x;
+        z.y += e.clientY - last.y;
+        render(el, false);
+        return;
+      }
+      // pinch: scale by the change in finger spread, about the midpoint, and follow it
+      const [a, b] = [...pointers.values()];
+      const mid = (p: typeof a, q: typeof a) => [(p.x + q.x) / 2, (p.y + q.y) / 2];
+      const spread = (p: typeof a, q: typeof a) => Math.hypot(p.x - q.x, p.y - q.y) || 1;
+      const [mx, my] = mid(a, b);
+      const before = spread(a, b);
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      const [c, d] = [...pointers.values()];
+      const [nx, ny] = mid(c, d);
+      z.x += nx - mx;
+      z.y += ny - my;
+      zoomTo(el, (z.s * spread(c, d)) / before, nx, ny, false);
+    });
+    const lift = (e: PointerEvent) => {
+      pointers.delete(e.pointerId);
+      if (!pointers.size) image()?.classList.remove("dragging");
+    };
+    stage.addEventListener("pointerup", lift);
+    stage.addEventListener("pointercancel", lift);
+    stage.addEventListener("click", (e) => {
+      const el = image();
+      if (!el || e.target !== el || moved) return;
+      if (z.s > 1) unzoom();
+      else zoomTo(el, Math.min(maxScale(el), Math.max(2.5, el.naturalWidth / el.offsetWidth)), e.clientX, e.clientY, true);
+    });
+    // hand a playing recording's position back to the inline player
+    const release = () => {
+      const copy = stage.querySelector<HTMLVideoElement>("video.full");
+      if (copy && source) {
+        copy.pause();
+        source.currentTime = copy.currentTime;
+      }
+      source = null;
+      stage.querySelector(".full")?.remove();
+    };
+    const show = (i: number) => {
+      release();
+      shown = i;
+      const slide = slides[i];
+      const media = slide.querySelector<HTMLImageElement | HTMLVideoElement>(".media")!;
+      const copy = document.createElement(media instanceof HTMLVideoElement ? "video" : "img");
+      copy.className = "full";
+      copy.src = media.currentSrc || media.src;
+      if (copy instanceof HTMLVideoElement && media instanceof HTMLVideoElement) {
+        // carry on from where the inline player was
+        source = media;
+        Object.assign(copy, { controls: true, muted: media.muted, playsInline: true, currentTime: media.currentTime });
+        copy.setAttribute("aria-label", slide.dataset.caption ?? "");
+        const wasPlaying = !media.paused;
+        media.pause();
+        if (wasPlaying) copy.play().catch(() => {});
+      } else {
+        (copy as HTMLImageElement).alt = (media as HTMLImageElement).alt;
+      }
+      stage.prepend(copy);
+      zoomIn.hidden = zoomOut.hidden = copy instanceof HTMLVideoElement;
+      resetZoom();
+      if (copy instanceof HTMLImageElement) render(copy, false);
+      boxCaption.textContent = slide.dataset.caption ?? "";
+      if (boxCount) boxCount.textContent = `${i + 1} / ${slides.length}`;
+      if (boxPrev && boxNext) disablePair(boxPrev, i === 0, boxNext, i === slides.length - 1);
+      // keep the carousel underneath in step, so closing lands on the same slide
+      if (stopOf(i) !== current) go(stopOf(i), true);
+    };
+    // morph between the inline slide and the preview, where view transitions are supported
+    const morph = (from: Element | null, to: () => Element | null, change: () => void) => {
+      if (!document.startViewTransition || reducedMotion()) return change();
+      // data-lightbox-morph unnames everything else (logo, title, track) so it all dims with the page
+      const html = document.documentElement;
+      html.dataset.lightboxMorph = "";
+      from?.classList.add("lightbox-vt");
+      const t = document.startViewTransition(() => {
+        from?.classList.remove("lightbox-vt");
+        change();
+        to()?.classList.add("lightbox-vt");
+      });
+      t.ready.catch(() => {}); // skipped (e.g. tab hidden): the change still applies
+      t.finished.finally(() => {
+        to()?.classList.remove("lightbox-vt");
+        delete html.dataset.lightboxMorph;
+      });
+    };
+    const inline = () => (shown >= 0 ? slides[shown].querySelector(".media") : null);
+    const full = () => stage.querySelector(".full");
+    const openBox = (i: number) =>
+      morph(slides[i].querySelector(".media"), full, () => {
+        show(i);
+        box.showModal();
+      });
+    const closeBox = () => {
+      if (box.open)
+        morph(full(), inline, () => {
+          box.close();
+          release();
+        });
+    };
+    const step = (d: number) => {
+      const i = shown + d;
+      if (i >= 0 && i < slides.length) show(i);
+    };
+    boxPrev?.addEventListener("click", () => step(-1));
+    boxNext?.addEventListener("click", () => step(1));
+    box.querySelector(".box-close")!.addEventListener("click", closeBox);
+    box.addEventListener("close", () => {
+      release();
+      shown = -1;
+    });
+    // Esc: run our animated close instead of the instant native one
+    box.addEventListener("cancel", (e) => {
+      e.preventDefault();
+      closeBox();
+    });
+    box.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") step(-1);
+      else if (e.key === "ArrowRight") step(1);
+      else if (e.key === "+" || e.key === "=") zoomBy(1.6);
+      else if (e.key === "-") zoomBy(1 / 1.6);
+      else if (e.key === "0") unzoom();
+      else return;
+      e.preventDefault();
+    });
+    // anything but the media and the buttons (backdrop, padding, caption) closes it
+    box.addEventListener("click", (e) => {
+      if (!(e.target as Element).closest(".full, .box-bar")) closeBox();
+    });
+    slides.forEach((s, i) => s.querySelector("[data-zoom]")?.addEventListener("click", () => openBox(i)));
+
+    prev.addEventListener("click", () => go(Math.max(0, current - 1)));
+    next.addEventListener("click", () => go(Math.min(stops.length - 1, current + 1)));
+
+    // which stop is showing, and the scrubber's thumb, both follow the scroll position. Snapping
+    // means it comes to rest exactly on a stop, so the nearest one is the one showing
+    let frame = 0;
+    let dragging = false;
+    track.addEventListener(
+      "scroll",
+      () => {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => {
+          scrub.style.setProperty("--p", String(clamp(track.scrollLeft / maxScroll() || 0)));
+          if (stops.length < 2 || dragging) return;
+          const k = nearest();
+          if (k !== current) update(k);
+        });
+      },
+      { passive: true },
+    );
+
+    // dragging (or pressing anywhere on the rail) scrolls the track directly. Snapping is off
+    // meanwhile so it glides, then lands on the nearest stop on release
+    let grab = 0;
+    const scrubTo = (x: number) => {
+      const r = rail.getBoundingClientRect();
+      const w = r.width / stops.length;
+      track.scrollLeft = clamp((x - r.left - grab) / (r.width - w)) * maxScroll();
+      const k = nearest();
+      if (k !== current) update(k);
+    };
+    scrub.addEventListener("pointerdown", (e) => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      scrub.focus({ preventScroll: true });
+      const t = thumb.getBoundingClientRect();
+      // keep the grip point when grabbing the thumb; otherwise centre it under the pointer
+      grab = e.target === thumb ? e.clientX - t.left : t.width / 2;
+      scrub.setPointerCapture(e.pointerId);
+      scrub.classList.add("dragging");
+      dragging = true;
+      track.style.scrollSnapType = "none";
+      scrubTo(e.clientX);
+    });
+    scrub.addEventListener("pointermove", (e) => {
+      if (scrub.hasPointerCapture(e.pointerId)) scrubTo(e.clientX);
+    });
+    const drop = () => {
+      if (!dragging) return;
+      dragging = false;
+      scrub.classList.remove("dragging");
+      track.style.scrollSnapType = "";
+      go(nearest());
+    };
+    scrub.addEventListener("pointerup", drop);
+    scrub.addEventListener("pointercancel", drop);
+    scrub.addEventListener("keydown", (e) => {
+      const last = stops.length - 1;
+      const to = { ArrowLeft: current - 1, ArrowDown: current - 1, ArrowRight: current + 1, ArrowUp: current + 1, Home: 0, End: last, PageUp: current - 3, PageDown: current + 3 }[e.key];
+      if (to === undefined) return;
+      e.preventDefault();
+      go(Math.min(last, Math.max(0, to)));
+    });
   }
 </script>
 
 <style>
+  /* the frame is the size query container, so slides can be sized off its width */
+  .frame { container-type: inline-size; }
   .track {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: 100%;
-    gap: 12px;
+    --gap: 12px;
+    --h: calc(100cqw / 1.6);
+    position: relative;
+    display: flex;
+    gap: var(--gap);
+    height: var(--h);
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scroll-snap-type: x mandatory;
@@ -95,16 +540,131 @@ const single = slides.length < 2;
     border-radius: 14px;
   }
   .track::-webkit-scrollbar { display: none; }
-  .slide { scroll-snap-align: center; scroll-snap-stop: always; }
-  .slide img {
-    width: 100%;
-    aspect-ratio: 16 / 10;
-    object-fit: cover;
-    object-position: top;
+  .slide {
+    position: relative;
+    flex: none;
+    overflow: hidden;
     border: 1px solid var(--line);
     border-radius: 14px;
     background: var(--surface);
   }
+  .slide:has(video) { background: #000; }
+
+  /* a slide on its own fills the frame; a spread's slides are sized to their shots and the
+     spread is centred by margins (and the matching scroll-margin) on its outer ends */
+  .slide {
+    --slack: calc((100cqw - (var(--n) - 1) * var(--gap) - var(--h) * var(--sum)) / 2);
+    width: calc(var(--h) * var(--ar));
+  }
+  .slide[data-start] { margin-inline-start: var(--slack); scroll-margin-inline-start: var(--slack); scroll-snap-align: start; scroll-snap-stop: always; }
+  .slide[data-end] { margin-inline-end: var(--slack); }
+  .slide[data-start][data-end] { width: 100cqw; margin: 0; scroll-margin: 0; }
+
+  /* a shot shown in a box of a different shape: a blurred copy of itself fills the gap */
+  .slide[data-fill]::before {
+    content: "";
+    position: absolute;
+    inset: -24px;
+    background: var(--shot) center / cover;
+    filter: blur(24px) saturate(1.2);
+    opacity: 0.5;
+  }
+  .slide .media {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    /* contain, not cover: a capped wide shot and any rounding still show whole */
+    object-fit: contain;
+  }
+  .zoom { position: relative; display: block; width: 100%; height: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
+  .slide:has(.zoom:focus-visible) { outline: 2px solid var(--peri); outline-offset: 2px; }
+  .expand { position: absolute; top: 10px; right: 10px; }
+
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 56px 16px 16px;
+    border: 0;
+    overflow: hidden;
+    background: transparent;
+    cursor: zoom-out;
+    opacity: 0;
+    transition: opacity 0.2s, display 0.2s allow-discrete, overlay 0.2s allow-discrete;
+  }
+  .lightbox[open] { display: grid; place-items: center; opacity: 1; outline: none; }
+  @starting-style { .lightbox[open] { opacity: 0; } }
+  /* keep scrolls from reaching the page underneath without touching <html>'s overflow (which
+     would break the sticky sidebar/aside). The backdrop needs overflow: hidden to be a scroll
+     container for overscroll-behavior to apply; Safari only contains scrolls that overflow */
+  .lightbox:modal { overscroll-behavior: contain; }
+  .lightbox::backdrop {
+    overflow: hidden;
+    overscroll-behavior: contain;
+    background: rgb(5 8 14 / 0.6);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    transition: opacity 0.2s, display 0.2s allow-discrete, overlay 0.2s allow-discrete;
+  }
+  .lightbox[open]::backdrop { opacity: 1; }
+  @starting-style { .lightbox[open]::backdrop { opacity: 0; } }
+  /* above a zoomed image */
+  .box-bar { position: fixed; z-index: 1; top: 12px; right: 12px; display: flex; align-items: center; gap: 8px; cursor: auto; }
+  .box-count { margin-right: 4px; color: #c4ccdb; }
+  .stage { display: grid; justify-items: center; gap: 10px; min-height: 0; max-height: 100%; margin: 0; }
+  .stage :global(.full) {
+    display: block;
+    max-width: 100%;
+    max-height: calc(100dvh - 110px);
+    object-fit: contain;
+    border-radius: 10px;
+    cursor: auto;
+  }
+  .stage :global(video.full) { background: #000; }
+  .stage :global(img.full) { cursor: zoom-in; touch-action: none; user-select: none; -webkit-user-drag: none; }
+  .stage :global(img.full.zoomed) { cursor: grab; }
+  .stage :global(img.full.dragging) { cursor: grabbing; }
+  .stage :global(img.full.smooth) { transition: transform 0.25s ease; }
+  @media (prefers-reduced-motion: reduce) { .stage :global(img.full.smooth) { transition: none; } }
+  .stage .caption { color: #c4ccdb; text-align: center; }
+  /* a tall hit area around a thin rail, so it's easy to grab on touch */
+  .scrub {
+    --p: 0;
+    padding: 9px 0;
+    margin-top: 4px;
+    cursor: pointer;
+    /* the drag is horizontal, so a vertical swipe that starts here still scrolls the page */
+    touch-action: pan-y;
+    border-radius: 6px;
+  }
+  .scrub:focus-visible { outline: 2px solid var(--peri); outline-offset: 2px; }
+  .rail {
+    position: relative;
+    display: flex;
+    gap: 3px;
+    height: 4px;
+    transition: height 0.15s;
+  }
+  .scrub:hover .rail,
+  .scrub.dragging .rail,
+  .scrub:focus-visible .rail { height: 8px; }
+  .rail :global(.tick) { flex: 1; border-radius: 99px; background: var(--line); }
+  .thumb {
+    position: absolute;
+    inset-block: 0;
+    left: calc(var(--p) * (100% - 100% / var(--stops)));
+    width: calc(100% / var(--stops));
+    border-radius: 99px;
+    background: var(--peri);
+    cursor: grab;
+  }
+  .scrub.dragging, .scrub.dragging .thumb { cursor: grabbing; }
+
   .controls {
     display: flex;
     align-items: center;
@@ -112,8 +672,7 @@ const single = slides.length < 2;
     gap: 12px;
     margin-top: 10px;
   }
-  .controls[hidden] { display: none; }
   .caption { min-width: 0; font: 12px/1.5 var(--font-mono); color: var(--muted); }
   .count { color: var(--fg); }
-  .controls :global(button:disabled) { opacity: 0.35; pointer-events: none; }
+  .count:not([hidden])::after { content: " · "; color: var(--muted); }
 </style>

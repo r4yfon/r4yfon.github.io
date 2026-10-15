@@ -3,6 +3,7 @@
  * Pause / play for the monogram's automatic animation (the intro and the idle replay).
  * Hovering the logo still morphs it, since that's something the visitor chose to do.
  * Stored in localStorage; Base.astro applies it before first paint as <html data-logo-motion="paused">.
+ * With no stored choice it starts paused when the OS asks for reduced motion; pressing play overrides that.
  */
 import Pause from "@lucide/astro/icons/pause";
 import Play from "@lucide/astro/icons/play";

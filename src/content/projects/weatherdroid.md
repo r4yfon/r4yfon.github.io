@@ -2,28 +2,29 @@
 title: "WeatherDroid"
 slug: weatherdroid
 date: "2025-06"
-description: "A weather app for Android devices made with Kotlin, Jetpack Compose, and OpenMeteo's API."
+description: "An Android weather app showing live conditions from the Open-Meteo API, built with Kotlin and Jetpack Compose."
 kind: android
 role: "Solo"
 tags: [Kotlin, Jetpack Compose, Retrofit]
 repo: https://github.com/r4yfon/weatherdroid
+decision: "Added the real-world parts: live API calls with Retrofit and runtime location permissions for Android 12+."
 ---
 
-WeatherDroid is a modern weather application for Android, built with Kotlin and Jetpack Compose. It enables users to view current weather conditions for their location or select from a list of major cities worldwide. The app demonstrates proficiency in Android development, location services, REST API integration, and UI/UX design.
+WeatherDroid shows the current weather where you are, or in any of a list of major cities. Built for Android App Development while on exchange at Koç University, Istanbul: the last of three apps, after [TicTacDroid](/projects/tic-tac-droid/) and [TodoDroid](/projects/todo-droid/).
+
+It's the first of the three to depend on the outside world. Weather data comes live from the Open-Meteo API, and your location comes from the device, which means asking for permission at runtime the way Android 12+ requires.
 
 ## Features
 
-- View current weather for your location using Android's location services
-- Select from a list of major cities to check their weather
-- Displays temperature and visual weather indicators (Sunny, Cloudy, Rainy, etc.) with SVG icons
-- Modern, responsive UI built with Jetpack Compose
-- Runtime location permission handling for Android 12+ compatibility
+- Current weather for your location, using Android's location services
+- A list of major cities to check instead
+- Temperature with an icon for the conditions (sunny, cloudy, rainy and so on)
+- Runtime location permission handling for Android 12+
 
-## Technologies Used
+## Tech stack
 
 - Kotlin
 - Jetpack Compose
+- Retrofit (REST calls to the Open-Meteo API)
 - Android SDK (LocationManager, Geocoder)
-- Retrofit (REST API calls)
-- Lucide Icons (SVG weather icons)
-- OpenMeteo API
+- Lucide icons

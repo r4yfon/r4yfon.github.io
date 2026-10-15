@@ -1,1 +1,78 @@
-{"componentChunkName":"component---src-templates-web-project-tsx-content-file-path-src-docs-web-projects-wfh-scheduler-mdx","path":"/web-project/wfh-scheduler/","result":{"data":{"mdx":{"frontmatter":{"title":"WFH Scheduler","tags":["Flask","Vue 3","NeonDB","Vercel"],"url":"https://github.com/r4yfon/wfh-management-tool","website":"GitHub","description":"Comprehensive work-from-home management tool with Flask backend and Vue 3 frontend.","date":"2024-11","demo":"https://is212-frontend.vercel.app/"}},"allFile":{"nodes":[{"publicURL":"/v2/static/ecc15e7ca58bcdadd49d53308d8a5b1e/thumbnail.webp","name":"thumbnail","extension":"webp"},{"publicURL":"/v2/static/f2c4158949e03aeb17526173a08c0eb2/y-demo.webm","name":"y-demo","extension":"webm"},{"publicURL":"/v2/static/681514c87b55814ef3bdfcd36faae3f2/z_engineering-schedule.webp","name":"z_engineering-schedule","extension":"webp"},{"publicURL":"/v2/static/8073d7edad20b0a68c387372c98c20c1/z_manager-team-schedule.webp","name":"z_manager-team-schedule","extension":"webp"},{"publicURL":"/v2/static/208877aae79250bda0ed5648d841972a/z_org-schedule.webp","name":"z_org-schedule","extension":"webp"},{"publicURL":"/v2/static/78fc593977e7d9468589a18974c119dd/z_wfh-application.webp","name":"z_wfh-application","extension":"webp"},{"publicURL":"/v2/static/a7e65fbb924609ca2da87b94a86d87f6/z_wfh-requests.webp","name":"z_wfh-requests","extension":"webp"}]}},"pageContext":{"slug":"wfh-scheduler","prevProject":{"slug":"fresh-savings","title":"FreshSavings"},"nextProject":{"slug":"framer-portfolio","title":"Framer Portfolio"},"frontmatter":{"title":"WFH Scheduler","slug":"wfh-scheduler","date":"2024-11","description":"Comprehensive work-from-home management tool with Flask backend and Vue 3 frontend.","tags":["Flask","Vue 3","NeonDB","Vercel"],"website":"GitHub","url":"https://github.com/r4yfon/wfh-management-tool","demo":"https://is212-frontend.vercel.app/"}}},"staticQueryHashes":["2585229314","2961110632"],"slicesMap":{}}
+{
+  "componentChunkName": "component---src-templates-web-project-tsx-content-file-path-src-docs-web-projects-wfh-scheduler-mdx",
+  "path": "/web-project/wfh-scheduler/",
+  "result": {
+    "data": {
+      "mdx": {
+        "frontmatter": {
+          "title": "WFH Scheduler",
+          "tags": ["Flask", "Vue 3", "NeonDB", "Vercel"],
+          "url": "https://github.com/r4yfon/is212-wfh-management-tool",
+          "website": "GitHub",
+          "description": "Comprehensive work-from-home management tool with Flask backend and Vue 3 frontend.",
+          "date": "2024-11",
+          "demo": "https://is212-frontend.vercel.app/"
+        }
+      },
+      "allFile": {
+        "nodes": [
+          {
+            "publicURL": "/v2/static/ecc15e7ca58bcdadd49d53308d8a5b1e/thumbnail.webp",
+            "name": "thumbnail",
+            "extension": "webp"
+          },
+          {
+            "publicURL": "/v2/static/f2c4158949e03aeb17526173a08c0eb2/y-demo.webm",
+            "name": "y-demo",
+            "extension": "webm"
+          },
+          {
+            "publicURL": "/v2/static/681514c87b55814ef3bdfcd36faae3f2/z_engineering-schedule.webp",
+            "name": "z_engineering-schedule",
+            "extension": "webp"
+          },
+          {
+            "publicURL": "/v2/static/8073d7edad20b0a68c387372c98c20c1/z_manager-team-schedule.webp",
+            "name": "z_manager-team-schedule",
+            "extension": "webp"
+          },
+          {
+            "publicURL": "/v2/static/208877aae79250bda0ed5648d841972a/z_org-schedule.webp",
+            "name": "z_org-schedule",
+            "extension": "webp"
+          },
+          {
+            "publicURL": "/v2/static/78fc593977e7d9468589a18974c119dd/z_wfh-application.webp",
+            "name": "z_wfh-application",
+            "extension": "webp"
+          },
+          {
+            "publicURL": "/v2/static/a7e65fbb924609ca2da87b94a86d87f6/z_wfh-requests.webp",
+            "name": "z_wfh-requests",
+            "extension": "webp"
+          }
+        ]
+      }
+    },
+    "pageContext": {
+      "slug": "wfh-scheduler",
+      "prevProject": { "slug": "fresh-savings", "title": "FreshSavings" },
+      "nextProject": {
+        "slug": "framer-portfolio",
+        "title": "Framer Portfolio"
+      },
+      "frontmatter": {
+        "title": "WFH Scheduler",
+        "slug": "wfh-scheduler",
+        "date": "2024-11",
+        "description": "Comprehensive work-from-home management tool with Flask backend and Vue 3 frontend.",
+        "tags": ["Flask", "Vue 3", "NeonDB", "Vercel"],
+        "website": "GitHub",
+        "url": "https://github.com/r4yfon/is212-wfh-management-tool",
+        "demo": "https://is212-frontend.vercel.app/"
+      }
+    }
+  },
+  "staticQueryHashes": ["2585229314", "2961110632"],
+  "slicesMap": {}
+}

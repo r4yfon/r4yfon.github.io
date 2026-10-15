@@ -1,16 +1,17 @@
 ---
 /**
  * The RF monogram in pure CSS: three strokes drawn as clip-path polygons on a 32×32 grid.
- * Each stroke keeps a fixed point count (stem 4, bowl 9, tail 6) so it can morph R → F → </>:
- *   stem → stem → "/",  bowl → top bar → "<",  tail → middle bar → ">"
+ * Each stroke keeps a fixed point count (stem 4, bowl 27 so the R's curve stays round, tail 6) so it can morph R → </> → parcel:
+ *   triangle → "/" → left face,  semicircle → "<" → lid,  (hidden) tail → ">" → right face
+ * The parcel then ships: it slides out to the right and the R slides back in from the left.
  */
 interface Props {
   size?: number;
-  /** play the drop-in + R → F → </> intro on load (off on inner pages so navigation stays calm) */
+  /** play the drop-in + R → </> → parcel intro on load (off on inner pages so navigation stays calm) */
   intro?: boolean;
   /** render as a link (e.g. home) instead of a button */
   href?: string;
-  /** replay R → F → </> roughly every N seconds while it's on screen (0 = never) */
+  /** replay R → </> → parcel roughly every N seconds while it's on screen (0 = never) */
   every?: number;
 }
 const { size = 52, intro = true, href, every = 0 } = Astro.props;
@@ -29,23 +30,29 @@ const Tag = href ? "a" : "button";
 </Tag>
 
 <script>
+  import { reducedMotion } from "@/scripts/motion";
   import { blip } from "@/scripts/sound";
 
-  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // reduced motion keeps the logo calm only while it's paused; pressing play is an explicit opt-in
+  const calm = () => reducedMotion() && document.documentElement.dataset.logoMotion === "paused";
   const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  /** the intro waits for the drop-in to land, then the R → </> → parcel run takes about this long */
+  const INTRO_DELAY = 900;
+  const INTRO_LENGTH = 2500;
 
   for (const mark of document.querySelectorAll<HTMLElement>(".mark")) {
     const logo = mark.querySelector<HTMLElement>(".logo")!;
     const bowl = logo.querySelector<HTMLElement>(".bowl")!;
-    type State = "" | "is-f" | "is-code";
+    type State = "" | "is-code" | "is-box";
+    type Step = State | "ship";
 
+    const current = (): State => (logo.classList.contains("is-code") ? "is-code" : logo.classList.contains("is-box") ? "is-box" : "");
     const show = (s: State) => {
-      const current = logo.classList.contains("is-code") ? "is-code" : logo.classList.contains("is-f") ? "is-f" : "";
-      if (current === s) return false;
-      logo.classList.remove("is-f", "is-code");
+      if (current() === s) return false;
+      logo.classList.remove("is-code", "is-box");
       if (s) logo.classList.add(s);
       // the bounce lives on `scale` (compositor-only), not in the clip-path morph
-      if (!reduce) logo.animate([{ scale: 1 }, { scale: 1.1 }, { scale: 1 }], { duration: 260, easing: "cubic-bezier(.34,1.56,.64,1)" });
+      if (!calm()) logo.animate([{ scale: 1 }, { scale: 1.1 }, { scale: 1 }], { duration: 260, easing: "cubic-bezier(.34,1.56,.64,1)" });
       return true;
     };
 
@@ -63,14 +70,57 @@ const Tag = href ? "a" : "button";
         const timer = setTimeout(finish, ms + 50);
       });
 
+    // Send the parcel off to the right, swap back to the R off-stage, and slide it in from the left.
+    // Runs to completion once started (a half-shipped logo would be stuck off-screen); play() waits on it.
+    let shipping: Promise<void> | null = null;
+    const ship = () =>
+      (shipping ??= (async () => {
+        if (calm()) {
+          if (show("")) await morphDone();
+          return;
+        }
+        // a quick wind-up to the left, then it shoots off with a forward tilt
+        const out = logo.animate(
+          [
+            { translate: "0", rotate: "0deg", easing: "cubic-bezier(.3,0,.4,1)" },
+            { translate: "-14%", rotate: "-8deg", offset: 0.3, easing: "cubic-bezier(.6,0,.9,.4)" },
+            { translate: "190%", rotate: "10deg" },
+          ],
+          { duration: 360, fill: "forwards" },
+        );
+        // fade on the logo itself (no mask, so there's no frame edge to see): out once it's clear, in as it lands
+        const fadeOut = logo.animate([{ opacity: 1 }, { opacity: 1, offset: 0.5 }, { opacity: 0 }], { duration: 360, fill: "forwards" });
+        await out.finished;
+        logo.classList.add("snap"); // no morph while it's out of sight
+        logo.classList.remove("is-code", "is-box");
+        void logo.offsetWidth;
+        logo.classList.remove("snap");
+        const back = logo.animate([{ translate: "-190%" }, { translate: "0" }], {
+          duration: 620,
+          easing: "linear(0, .32 14%, .78 30%, 1.08 44%, 1.12 52%, 1.04 64%, .98 76%, 1)", // overshoots and settles
+        });
+        logo.animate([{ opacity: 0 }, { opacity: 1, offset: 0.45 }, { opacity: 1 }], { duration: 620 });
+        out.cancel();
+        fadeOut.cancel();
+        await back.finished;
+      })().finally(() => (shipping = null)));
+
     let run = 0; // a newer play() cancels an older one
-    async function play(steps: State[], dwell = 0) {
+    let playing = false;
+    async function play(steps: Step[], dwell = 0) {
       const id = ++run;
-      for (const s of steps) {
-        if (id !== run) return;
-        if (show(s)) await morphDone();
-        if (id !== run) return;
-        await sleep(dwell);
+      playing = true;
+      try {
+        for (const s of steps) {
+          if (shipping) await shipping;
+          if (id !== run) return;
+          if (s === "ship") await ship();
+          else if (show(s)) await morphDone();
+          if (id !== run) return;
+          await sleep(dwell);
+        }
+      } finally {
+        if (id === run) playing = false;
       }
     }
 
@@ -79,28 +129,33 @@ const Tag = href ? "a" : "button";
     const autoPaused = () => document.documentElement.dataset.logoMotion === "paused";
     document.addEventListener("rf:logo-motion", () => { if (autoPaused() && !hovering) play([""]); });
 
-    if (!reduce && mark.dataset.intro === "true") setTimeout(() => !autoPaused() && play(["is-f", "is-code", ""], 450), 900);
+    // a prerendered page (speculation rules) starts the clock when it's actually shown, not while hidden
+    const shown = (document as Document & { prerendering?: boolean }).prerendering ? new Promise((r) => document.addEventListener("prerenderingchange", r, { once: true })) : Promise.resolve();
+    if (mark.dataset.intro === "true") shown.then(() => setTimeout(() => !autoPaused() && play(["is-code", "is-box", "ship"], 450), INTRO_DELAY));
+    // Hover plays the whole run, parcel shipping included; it doesn't wait for the pointer to leave.
+    // Reduced motion (while paused) only shows </> and goes back to the R on leave.
     const enter = () => {
       hovering = true;
-      play(reduce ? ["is-code"] : ["is-f", "is-code"], 60);
+      if (calm()) play(["is-code"]);
+      else if (!playing) play(["is-code", "is-box", "ship"], 220);
     };
     const leave = () => {
       hovering = false;
-      play([""]);
+      if (calm()) play([""]);
     };
 
     // Idle replay. Skipped while hidden, off-screen or hovered, so it only costs ~1s of
     // repainting a tiny box every N seconds, and nothing at all when nobody can see it.
     const every = Number(mark.dataset.every) * 1000;
-    if (every > 0 && !reduce) {
+    if (every > 0) {
       let onScreen = true;
       new IntersectionObserver(([entry]) => (onScreen = entry.isIntersecting)).observe(mark);
       const tick = () =>
         setTimeout(async () => {
-          if (onScreen && !hovering && !document.hidden && !autoPaused()) await play(["is-f", "is-code", ""], 450);
+          if (onScreen && !hovering && !document.hidden && !autoPaused()) await play(["is-code", "is-box", "ship"], 450);
           tick();
         }, every * (0.85 + Math.random() * 0.3)); // a little jitter so it feels alive, not mechanical
-      setTimeout(tick, 900 + 2500); // start after the intro has played
+      setTimeout(tick, INTRO_DELAY + INTRO_LENGTH); // start after the intro has played
     }
     mark.addEventListener("pointerenter", enter);
     mark.addEventListener("pointerleave", leave);
@@ -129,12 +184,15 @@ const Tag = href ? "a" : "button";
     view-transition-name: monogram; /* stays put across page navigations */
   }
   .mark[data-intro="false"]:not(.wiggle) .logo > span { animation: none; }
-  .mark:hover { transform: scale(1.06); }
+  /* hold the drop-in on its first frame while the page is prerendered (see Base.astro) */
+  :global(html[data-prerendering]) .logo > span { animation-play-state: paused; }
+  @media (hover: hover) {
+    .mark:hover { transform: scale(1.06); }
+  }
   .mark:active { transform: scale(0.9); }
 
   .logo {
     --morph-dur: 0.28s;
-    --morph-ease: cubic-bezier(0.2, 0.9, 0.3, 1);
     --morph-ease: linear(0, 0.35 12%, 0.72 26%, 0.94 40%, 1.04 52%, 1.05 60%, 1.02 72%, 1 86%, 1);
     position: relative;
     display: block;
@@ -149,33 +207,40 @@ const Tag = href ? "a" : "button";
     transition-duration: var(--morph-dur);
     transition-timing-function: var(--morph-ease);
   }
+  /* 78% reads right on the light page, but over the dark one it lets the navy through and dulls both colours */
+  :global([data-mode="dark"]) .logo > span { opacity: 0.92; }
 
-  /* R */
+  /* R, after the v2 mark: a right triangle over a semicircle. The tail lies folded flat on the triangle's slanted
+     edge until it opens into ">". Drawn at 86% around the centre so it weighs about the same as </> and the parcel. */
   .stem {
-    background: #75a6f1;
-    clip-path: polygon(0 0, 29% 0, 29% 100%, 0 100%);
+    z-index: 2; /* the triangle sits over the semicircle, as in the v2 mark */
+    background: var(--brand-blue);
+    clip-path: polygon(7% 7%, 7% 7%, 90.8% 93%, 7% 93%);
     animation: stem-in 0.45s var(--ease-spring) backwards 0.05s;
   }
   .bowl {
     z-index: 1;
-    background: #d9ad84;
-    clip-path: polygon(18% 0, 62.5% 0, 78.9% 4.4%, 90.9% 16.4%, 95.3% 32.8%, 90.9% 49.2%, 78.9% 61.2%, 62.5% 65.6%, 18% 65.6%);
+    background: var(--brand-tan);
+    clip-path: polygon(7% 7%, 60.8% 7%, 64.4% 7.2%, 68.1% 8%, 71.5% 9.1%, 74.9% 10.8%, 77.9% 12.8%, 80.7% 15.3%, 83.1% 18%, 85.2% 21.1%, 86.8% 24.4%, 88% 27.9%, 88.7% 31.5%, 89% 35.2%, 88.7% 38.9%, 88% 42.5%, 86.8% 46%, 85.2% 49.3%, 83.1% 52.4%, 80.7% 55.2%, 77.9% 57.6%, 74.9% 59.6%, 71.5% 61.3%, 68.1% 62.5%, 64.4% 63.2%, 60.8% 63.4%, 7% 63.4%);
     animation: bowl-in 0.5s var(--ease-spring) backwards 0.15s;
   }
   .tail {
-    background: #75a6f1;
-    clip-path: polygon(28% 58%, 45% 58%, 62% 58%, 98% 100%, 64% 100%, 46% 79%);
+    background: var(--brand-blue);
+    clip-path: polygon(48.9% 50%, 57.3% 58.6%, 65.7% 67.2%, 65.7% 67.2%, 57.3% 58.6%, 48.9% 50%);
     animation: tail-in 0.45s var(--ease-spring) backwards 0.25s;
   }
 
-  /* F: stem stays, bowl → top bar, tail → middle bar */
-  .is-f .bowl { clip-path: polygon(18% 0, 84% 0, 88% 1%, 90% 4%, 90% 11%, 90% 18%, 88% 21%, 84% 22%, 18% 22%); }
-  .is-f .tail { clip-path: polygon(18% 40%, 43% 40%, 68% 40%, 68% 62%, 18% 62%, 18% 51%); background: #d9ad84; }
-
   /* </> */
-  .is-code .stem { clip-path: polygon(56% 12%, 66% 12%, 44% 88%, 34% 88%); }
-  .is-code .bowl { clip-path: polygon(28% 18%, 34% 26%, 34% 26%, 24% 38%, 14% 50%, 24% 62%, 34% 74%, 28% 82%, 2% 50%); }
-  .is-code .tail { clip-path: polygon(66% 26%, 72% 18%, 98% 50%, 72% 82%, 66% 74%, 86% 50%); background: #d9ad84; }
+  .is-code .stem { clip-path: polygon(50.6% 12%, 69.2% 12%, 49.4% 88%, 30.8% 88%); }
+  .is-code .bowl { clip-path: polygon(25% 19%, 39% 30.3%, 39% 30.3%, 39% 30.3%, 39% 30.3%, 39% 30.3%, 37% 32.8%, 35% 35.2%, 33.1% 37.6%, 31.1% 40.1%, 29.1% 42.6%, 27.1% 45%, 25.1% 47.5%, 23.1% 50%, 25.1% 52.5%, 27.1% 55%, 29.1% 57.4%, 31.1% 59.9%, 33.1% 62.4%, 35% 64.8%, 37% 67.2%, 39% 69.7%, 35.5% 72.5%, 32% 75.3%, 28.5% 78.2%, 25% 81%, 0% 50%); }
+  .is-code .tail { clip-path: polygon(61% 30.3%, 75% 19%, 100% 50%, 75% 81%, 61% 69.7%, 76.9% 50%); background: var(--brand-tan); }
+
+  /* parcel, seen from above at an angle: the lid and two sides, with thin seams between them */
+  .is-box .stem { clip-path: polygon(6% 31%, 46% 54%, 46% 98%, 6% 75%); }
+  .is-box .bowl { clip-path: polygon(50% 2%, 71% 14%, 76.2% 17%, 81.5% 20%, 86.8% 23%, 92% 26%, 86.8% 29%, 81.5% 32%, 76.2% 35%, 71% 38%, 65.8% 41%, 60.5% 44%, 55.2% 47%, 50% 50%, 44.8% 47%, 39.5% 44%, 34.2% 41%, 29% 38%, 23.8% 35%, 18.5% 32%, 13.2% 29%, 8% 26%, 13.2% 23%, 18.5% 20%, 23.8% 17%, 29% 14%, 50% 2%); }
+  .is-box .tail { clip-path: polygon(54% 54%, 94% 31%, 94% 53%, 94% 75%, 54% 98%, 54% 76%); }
+
+  .logo.snap > span { transition: none; }
 
   @keyframes stem-in { from { transform: translateY(70%) scaleY(0.3); opacity: 0; } }
   @keyframes bowl-in { from { transform: translate(60%, -80%) rotate(25deg); opacity: 0; } }
@@ -187,7 +252,7 @@ const Tag = href ? "a" : "button";
   @keyframes bowl-pop { 50% { transform: translate(6%, -10%) rotate(-10deg) scale(1.08); } }
 
   @media (prefers-reduced-motion: reduce) {
-    .logo { --morph-dur: 0s; }
-    .logo > span, .mark { animation: none !important; transition: none; }
+    :global(html[data-logo-motion="paused"]) .logo { --morph-dur: 0s; }
+    :global(html[data-logo-motion="paused"]) :is(.logo > span, .mark) { animation: none !important; transition: none; }
   }
 </style>

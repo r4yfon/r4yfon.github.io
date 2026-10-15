@@ -1,12 +1,23 @@
-<div class="spotlight" aria-hidden="true"></div>
+<div class="spotlight" aria-hidden="true"><div class="spot"></div></div>
 
 <script>
-  const spot = document.querySelector<HTMLElement>(".spotlight")!;
+  // The glow is a fixed-size circle that only moves (translate is compositor-only), so following
+  // the pointer doesn't repaint a full-screen gradient. One update per frame at most.
+  const spot = document.querySelector<HTMLElement>(".spot")!;
+  let x = 0;
+  let y = 0;
+  let queued = false;
   addEventListener(
     "pointermove",
     (e) => {
-      spot.style.setProperty("--mx", `${e.clientX}px`);
-      spot.style.setProperty("--my", `${e.clientY}px`);
+      x = e.clientX;
+      y = e.clientY;
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => {
+        queued = false;
+        spot.style.translate = `${x}px ${y}px`;
+      });
     },
     { passive: true },
   );
@@ -17,8 +28,17 @@
     position: fixed;
     inset: 0;
     z-index: 0;
+    overflow: clip;
     pointer-events: none;
-    background: radial-gradient(520px circle at var(--mx, 30%) var(--my, 20%), var(--glow), transparent 70%);
+  }
+  /* centred on its own top-left via the negative margins, so translate is the pointer position */
+  .spot {
+    width: 1040px;
+    height: 1040px;
+    margin: -520px 0 0 -520px;
+    translate: 30vw 20vh;
+    background: radial-gradient(closest-side, var(--glow), transparent 70%);
+    will-change: translate;
   }
   @media (prefers-reduced-motion: reduce), (pointer: coarse) {
     .spotlight { display: none; }
