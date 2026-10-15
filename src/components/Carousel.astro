@@ -144,6 +144,7 @@ const single = stops.length < 2;
 
 <script>
   import { fitSlides, planStops, stopCaption } from "@/lib/carousel";
+  import { WheelGestures } from "wheel-gestures";
   import { reducedMotion } from "@/scripts/motion";
 
   // Disabling the focused button would drop focus to the page, taking the arrow keys with it,
@@ -308,32 +309,29 @@ const single = stops.length < 2;
     };
     zoomIn.addEventListener("click", () => zoomBy(1.6));
     zoomOut.addEventListener("click", () => zoomBy(1 / 1.6));
-    // a trackpad's sideways two-finger swipe steps once per swipe (its momentum included), or pans a zoomed image
-    let wheelX = 0;
-    let wheelSwiped = false;
-    let wheelIdle = 0;
-    // on the window while the preview is open, not the dialog: wheel events Chrome aims at a stale
-    // target (say, a recording just swapped out) still bubble up to here
+    // a trackpad's sideways two-finger swipe steps once per swipe. The hard part is telling a new
+    // swipe from the last one's momentum, which keeps sending wheel events for a second or more;
+    // wheel-gestures does that by analysing how the deltas decelerate, and flags each new gesture
+    // with isStart (including one that interrupts momentum)
+    const gestures = WheelGestures({ preventWheelAction: false, reverseSign: false });
+    let armed = false;
+    gestures.on("wheel", ({ isStart, axisMovement: [x, y], event }) => {
+      if (isStart) armed = true;
+      if (!armed || event.ctrlKey || z.s > 1) return;
+      if (Math.abs(x) > 50 && Math.abs(x) > Math.abs(y) && step(Math.sign(x))) armed = false;
+    });
+    // gestures and our own handler sit on the window while the preview is open, not the dialog:
+    // wheel events Chrome aims at a stale target (say, a recording just swapped out) still bubble up here
+    let unobserve = () => {};
+    // the page itself mustn't scroll sideways (back/forward navigation); a zoomed image pans instead
     const onWheel = (e: WheelEvent) => {
       const el = image();
       if (!e.ctrlKey && Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
         e.preventDefault();
         if (el && z.s > 1) {
           z.x -= e.deltaX;
-          return render(el, false);
+          render(el, false);
         }
-        clearTimeout(wheelIdle);
-        wheelIdle = window.setTimeout(() => {
-          wheelX = 0;
-          wheelSwiped = false;
-        }, 200);
-        // a swipe back the other way is a new swipe, even with the last one's momentum still arriving
-        if (Math.sign(e.deltaX) !== Math.sign(wheelX)) {
-          wheelX = 0;
-          wheelSwiped = false;
-        }
-        wheelX += e.deltaX;
-        if (!wheelSwiped && Math.abs(wheelX) > 60) wheelSwiped = step(Math.sign(wheelX));
         return;
       }
       if (!el) return;
@@ -515,6 +513,7 @@ const single = stops.length < 2;
         show(i);
         box.showModal();
         window.addEventListener("wheel", onWheel, { passive: false });
+        unobserve = gestures.observe(window);
       });
     const closeBox = () => {
       if (box.open)
@@ -536,6 +535,7 @@ const single = stops.length < 2;
     box.querySelector(".box-close")!.addEventListener("click", closeBox);
     box.addEventListener("close", () => {
       window.removeEventListener("wheel", onWheel);
+      unobserve();
       release();
       shown = -1;
     });
