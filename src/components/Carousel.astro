@@ -312,33 +312,36 @@ const single = stops.length < 2;
     let wheelX = 0;
     let wheelSwiped = false;
     let wheelIdle = 0;
-    box.addEventListener(
-      "wheel",
-      (e) => {
-        const el = image();
-        if (!e.ctrlKey && Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-          e.preventDefault();
-          if (el && z.s > 1) {
-            z.x -= e.deltaX;
-            return render(el, false);
-          }
-          clearTimeout(wheelIdle);
-          wheelIdle = window.setTimeout(() => {
-            wheelX = 0;
-            wheelSwiped = false;
-          }, 200);
-          wheelX += e.deltaX;
-          if (!wheelSwiped && Math.abs(wheelX) > 60) wheelSwiped = step(Math.sign(wheelX));
-          return;
-        }
-        if (!el) return;
+    // on the window while the preview is open, not the dialog: wheel events Chrome aims at a stale
+    // target (say, a recording just swapped out) still bubble up to here
+    const onWheel = (e: WheelEvent) => {
+      const el = image();
+      if (!e.ctrlKey && Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
         e.preventDefault();
-        // a trackpad pinch arrives as ctrl + wheel, in much smaller steps
-        const delta = e.deltaY * (e.deltaMode === 1 ? 16 : 1);
-        zoomTo(el, z.s * Math.exp(-delta * (e.ctrlKey ? 0.01 : 0.002)), e.clientX, e.clientY, false);
-      },
-      { passive: false },
-    );
+        if (el && z.s > 1) {
+          z.x -= e.deltaX;
+          return render(el, false);
+        }
+        clearTimeout(wheelIdle);
+        wheelIdle = window.setTimeout(() => {
+          wheelX = 0;
+          wheelSwiped = false;
+        }, 200);
+        // a swipe back the other way is a new swipe, even with the last one's momentum still arriving
+        if (Math.sign(e.deltaX) !== Math.sign(wheelX)) {
+          wheelX = 0;
+          wheelSwiped = false;
+        }
+        wheelX += e.deltaX;
+        if (!wheelSwiped && Math.abs(wheelX) > 60) wheelSwiped = step(Math.sign(wheelX));
+        return;
+      }
+      if (!el) return;
+      e.preventDefault();
+      // a trackpad pinch arrives as ctrl + wheel, in much smaller steps
+      const delta = e.deltaY * (e.deltaMode === 1 ? 16 : 1);
+      zoomTo(el, z.s * Math.exp(-delta * (e.ctrlKey ? 0.01 : 0.002)), e.clientX, e.clientY, false);
+    };
     window.addEventListener("resize", () => {
       const el = image();
       if (box.open && el) render(el, false);
@@ -441,24 +444,27 @@ const single = stops.length < 2;
       if (z.s > 1) unzoom();
       else zoomTo(el, Math.min(maxScale(el), Math.max(2.5, el.naturalWidth / el.offsetWidth)), e.clientX, e.clientY, true);
     });
-    // hand a playing recording's position back to the inline player
-    const release = () => {
+    // hand a playing recording's position back to the inline player, and take the preview down
+    // (unless it's being reused for the next slide)
+    const release = (keep?: Element | null) => {
       const copy = stage.querySelector<HTMLVideoElement>("video.full");
       if (copy && source) {
         copy.pause();
         source.currentTime = copy.currentTime;
       }
       source = null;
-      stage.querySelector(".full")?.remove();
+      const old = stage.querySelector(".full");
+      if (old !== keep) old?.remove();
     };
     const show = (i: number) => {
-      // reuse the previewed image: a trackpad's wheel events stay with the element under the
-      // cursor until it moves, so swapping it out would strand the next two-finger swipe
-      const previous = stage.querySelector<HTMLImageElement>("img.full");
-      release();
       shown = i;
       const slide = slides[i];
       const media = slide.querySelector<HTMLImageElement | HTMLVideoElement>(".media")!;
+      // reuse the previewed image, without ever detaching it: Chrome sends a trackpad's wheel
+      // events to the element under the cursor and only looks again when the cursor moves, so
+      // removing it (even briefly) strands the next two-finger swipe
+      const previous = media instanceof HTMLImageElement ? stage.querySelector<HTMLImageElement>("img.full") : null;
+      release(previous);
       const copy = media instanceof HTMLVideoElement ? document.createElement("video") : (previous ?? document.createElement("img"));
       copy.className = "full";
       copy.removeAttribute("style");
@@ -474,7 +480,7 @@ const single = stops.length < 2;
       } else {
         (copy as HTMLImageElement).alt = (media as HTMLImageElement).alt;
       }
-      stage.prepend(copy);
+      if (!copy.isConnected) stage.prepend(copy);
       zoomIn.hidden = zoomOut.hidden = copy instanceof HTMLVideoElement;
       resetZoom();
       if (copy instanceof HTMLImageElement) render(copy, false);
@@ -508,6 +514,7 @@ const single = stops.length < 2;
       morph(slides[i].querySelector(".media"), full, () => {
         show(i);
         box.showModal();
+        window.addEventListener("wheel", onWheel, { passive: false });
       });
     const closeBox = () => {
       if (box.open)
@@ -528,6 +535,7 @@ const single = stops.length < 2;
     boxNext?.addEventListener("click", () => step(1));
     box.querySelector(".box-close")!.addEventListener("click", closeBox);
     box.addEventListener("close", () => {
+      window.removeEventListener("wheel", onWheel);
       release();
       shown = -1;
     });
