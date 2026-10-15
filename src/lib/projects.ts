@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { imageMetadata } from "astro/assets/utils";
+import type { ImageMetadata } from "astro";
 import { getCollection, type CollectionEntry } from "astro:content";
 
 export type Project = CollectionEntry<"projects">;
@@ -34,34 +34,38 @@ export const vt = {
   title: (id: string) => `view-transition-name: title-${id}; view-transition-class: project-title`,
 };
 
+// Project images, optimised by astro:assets. Only files that match the convention are pulled in
+const images = import.meta.glob<ImageMetadata>(
+  ["/src/assets/projects/*/{thumbnail,logo}.webp", "/src/assets/projects/*/z[-_]*.{webp,png,jpg,jpeg}"],
+  { eager: true, import: "default" },
+);
+
 /**
- * Media for a project lives in public/assets/<id>/ by convention (carried over from v2):
- *   thumbnail.webp · logo.webp · z_*.webp screenshots · y-demo.webm
- * Read at build time, so adding a file is all it takes. Anything else in the folder (e.g. a
- * persona.webp kept for reference) stays out of the carousel.
+ * Media for a project lives in src/assets/projects/<id>/ by convention (carried over from v2):
+ *   thumbnail.webp · logo.webp · z_*.webp screenshots
+ * and its recording in public/assets/<id>/y-demo.webm. Read at build time, so adding a file is all
+ * it takes. Anything else in the folder (e.g. a persona.webp kept for reference) stays out of the carousel.
  */
 export function projectMedia(id: string) {
-  const dir = path.join(process.cwd(), "public", "assets", id);
-  const files = fs.existsSync(dir) ? fs.readdirSync(dir).sort() : [];
-  const url = (f: string) => `/assets/${id}/${f}`;
-  const find = (name: string) => (files.includes(name) ? url(name) : undefined);
-  const video = files.find((f) => /^y[-_].+\.(webm|mp4)$/.test(f));
+  const dir = `/src/assets/projects/${id}/`;
+  const own = Object.keys(images)
+    .filter((k) => k.startsWith(dir))
+    .sort()
+    .map((k) => ({ file: k.slice(dir.length), image: images[k] }));
+  const find = (name: string) => own.find((m) => m.file === name)?.image;
+  const videoDir = path.join(process.cwd(), "public", "assets", id);
+  const video = fs.existsSync(videoDir) ? fs.readdirSync(videoDir).sort().find((f) => /^y[-_].+\.(webm|mp4)$/.test(f)) : undefined;
   return {
     thumbnail: find("thumbnail.webp"),
     logo: find("logo.webp"),
-    screenshots: files.filter((f) => /^z[-_].+\.(webp|png|jpe?g)$/.test(f)).map(url),
-    video: video && url(video),
+    screenshots: own.filter((m) => m.file.startsWith("z")).map((m) => ({ image: m.image, caption: captionFromFile(m.file) })),
+    video: video && `/assets/${id}/${video}`,
   };
 }
 
-/** Width ÷ height of an image under public/, read from its header at build time; undefined for anything it can't read (videos) */
-export async function aspectOf(src: string) {
-  try {
-    const { width, height } = await imageMetadata(fs.readFileSync(path.join(process.cwd(), "public", src)), src);
-    return width / height;
-  } catch {
-    return undefined;
-  }
+/** Widths for a srcset: those of `candidates` the image can fill, plus its own */
+export function widthsFor(image: ImageMetadata, candidates: number[]) {
+  return [...candidates.filter((w) => w < image.width), image.width];
 }
 
 /** "z_manager-team-schedule.webp" → "Manager team schedule"; a leading "01-" only sets the order and is dropped */

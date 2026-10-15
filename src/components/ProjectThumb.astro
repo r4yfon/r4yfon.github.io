@@ -3,7 +3,8 @@
  * A project's image (thumbnail, else app logo, else a tinted tile with its initials).
  * Carries `thumb-<id>` so it morphs into the hero on the project page.
  */
-import { projectMedia, vt, type Project } from "@/lib/projects";
+import { Picture } from "astro:assets";
+import { projectMedia, vt, widthsFor, type Project } from "@/lib/projects";
 
 interface Props {
   project: Project;
@@ -11,8 +12,10 @@ interface Props {
   eager?: boolean;
   /** sits inside a frame (ProjectCard's browser window), so drop its own border and large radius */
   framed?: boolean;
+  /** how wide it's shown, for picking a size from the srcset; defaults to a project card's thumbnail */
+  sizes?: string;
 }
-const { project, class: className, eager = false, framed = false } = Astro.props;
+const { project, class: className, eager = false, framed = false, sizes = "(min-width: 1024px) 380px, (min-width: 640px) 50vw, 100vw" } = Astro.props;
 const media = projectMedia(project.id);
 const src = media.thumbnail ?? media.logo;
 const tints = ["#adbbd6, #7f95c4", "#e9d2bb, #d9ad84", "#c9d3e6, #e9d2bb", "#9fd3b6, #adbbd6"];
@@ -26,9 +29,14 @@ const initials = project.data.title.replace(/[^A-Za-z ]/g, "").split(" ").map((w
   data-vt-thumb>
   {
     src ? (
-      <img
+      <Picture
         src={src}
         alt=""
+        formats={["avif"]}
+        fallbackFormat="webp"
+        widths={widthsFor(src, [240, 400, 640, 960, 1280])}
+        sizes={sizes}
+        pictureAttributes={{ class: "contents" }}
         class={media.thumbnail ? "size-full object-cover object-top" : "size-3/5 object-contain"}
         loading={eager ? "eager" : "lazy"}
         decoding={eager ? "sync" : "async"}

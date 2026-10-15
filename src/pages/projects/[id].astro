@@ -11,7 +11,7 @@ import SoundToggle from "@/components/SoundToggle.astro";
 import ThemeToggle from "@/components/ThemeToggle.astro";
 import Watermark from "@/components/Watermark.astro";
 import Base from "@/layouts/Base.astro";
-import { aspectOf, captionFromFile, formatMonth, getProjects, projectMedia, projectStory, vt, type Project } from "@/lib/projects";
+import { formatMonth, getProjects, projectMedia, projectStory, vt, type Project } from "@/lib/projects";
 
 export async function getStaticPaths() {
   const projects = await getProjects();
@@ -37,13 +37,11 @@ const { id, data } = project;
 const { Content } = await render(project);
 const media = projectMedia(id);
 // thumbnail, recording and screenshots share one carousel, so the hero isn't followed by a repeat of itself
-const slides: Slide[] = await Promise.all(
-  [
-    ...(media.thumbnail ? [{ src: media.thumbnail, caption: "Overview" }] : []),
-    ...(media.video ? [{ src: media.video, caption: "Demo recording", video: true }] : []),
-    ...media.screenshots.map((src) => ({ src, caption: captionFromFile(src) })),
-  ].map(async (s) => ({ ...s, aspect: await aspectOf(s.src) })),
-);
+const slides: Slide[] = [
+  ...(media.thumbnail ? [{ image: media.thumbnail, caption: "Overview" }] : []),
+  ...(media.video ? [{ video: media.video, caption: "Demo recording" }] : []),
+  ...media.screenshots,
+];
 const story = projectStory(data);
 // shown twice: under the title below lg, at the top of the sticky aside on desktop
 const links = [
@@ -78,7 +76,7 @@ const links = [
             // only morph from the card when the carousel opens on the same image; otherwise the two just crossfade
             <Carousel label={`${data.title} media`} slides={slides} transitionName={media.thumbnail ? vt.thumb(id) : undefined} transitionClass="project-thumb" />
           ) : (
-            <ProjectThumb project={project} class="aspect-[16/7]" eager />
+            <ProjectThumb project={project} class="aspect-[16/7]" sizes="(min-width: 1152px) 1056px, 90vw" eager />
           )
         }
         <div>
