@@ -7,7 +7,8 @@
  * them still plays/pauses) and get an expand button for the lightbox. The lightbox closes on
  * its X, Esc, or a click anywhere outside the media. Images in the lightbox zoom: a click zooms to
  * full resolution at that point (and back out), the wheel or a pinch zooms around the pointer,
- * dragging pans, and +/−/0 or the bar's buttons zoom from the keyboard.
+ * dragging pans, and +/−/0 or the bar's buttons zoom from the keyboard. Unzoomed, swiping sideways
+ * (one finger, a mouse drag, or two fingers on a trackpad) steps to the previous or next slide.
  *
  * Slides are sized by their aspect ratio in a 16:10 frame: runs of phone screens share it
  * 2–3 up as a spread, and anything alone fills it. Prev/next step through stops (a whole
@@ -302,10 +303,29 @@ const single = stops.length < 2;
     };
     zoomIn.addEventListener("click", () => zoomBy(1.6));
     zoomOut.addEventListener("click", () => zoomBy(1 / 1.6));
+    // a trackpad's sideways two-finger swipe steps once per swipe (its momentum included), or pans a zoomed image
+    let wheelX = 0;
+    let wheelSwiped = false;
+    let wheelIdle = 0;
     box.addEventListener(
       "wheel",
       (e) => {
         const el = image();
+        if (!e.ctrlKey && Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+          e.preventDefault();
+          if (el && z.s > 1) {
+            z.x -= e.deltaX;
+            return render(el, false);
+          }
+          clearTimeout(wheelIdle);
+          wheelIdle = window.setTimeout(() => {
+            wheelX = 0;
+            wheelSwiped = false;
+          }, 200);
+          wheelX += e.deltaX;
+          if (!wheelSwiped && Math.abs(wheelX) > 60) wheelSwiped = step(Math.sign(wheelX));
+          return;
+        }
         if (!el) return;
         e.preventDefault();
         // a trackpad pinch arrives as ctrl + wheel, in much smaller steps
@@ -319,36 +339,77 @@ const single = stops.length < 2;
       if (box.open && el) render(el, false);
     });
 
-    // one pointer pans, two pinch; a press that barely moves is a click, which toggles zoom
+    // swiping: unzoomed, a sideways drag pulls the media along with it, and letting go far
+    // enough (or with a flick) moves on to the neighbouring slide; otherwise it springs back
+    let pulled = 0;
+    const pull = (dx: number) => {
+      const el = full();
+      if (!el) return;
+      // there's nothing past the first or last slide, so it drags with resistance there
+      const end = dx > 0 ? shown === 0 : shown === slides.length - 1;
+      pulled = end ? dx / 3 : dx;
+      el.classList.remove("smooth");
+      el.style.transform = `translateX(${pulled}px)`;
+      el.style.opacity = String(1 - Math.min(0.5, Math.abs(pulled) / box.clientWidth));
+    };
+    // ms: how long the swipe took, or undefined to just spring back
+    const settle = (ms?: number) => {
+      const el = full();
+      const dx = pulled;
+      pulled = 0;
+      if (!el || !dx) return;
+      const far = ms !== undefined && (Math.abs(dx) > box.clientWidth / 5 || (Math.abs(dx) > 30 && Math.abs(dx) / ms > 0.4));
+      const from = { transform: el.style.transform, opacity: el.style.opacity };
+      el.style.transform = el.style.opacity = "";
+      if (far && step(dx < 0 ? 1 : -1)) return;
+      if (!reducedMotion()) el.animate([from, { transform: "none", opacity: 1 }], { duration: 200, easing: "ease-out" });
+    };
+
+    // one pointer pans a zoomed image or swipes an unzoomed one, two pinch; a press that barely
+    // moves is a click, which toggles zoom. Swipes work anywhere around the media too
     const pointers = new Map<number, { x: number; y: number }>();
-    let pressed = { x: 0, y: 0 };
+    let pressed = { x: 0, y: 0, t: 0 };
     let moved = false;
-    stage.addEventListener("pointerdown", (e) => {
-      const el = image();
-      if (!el || e.target !== el || e.button !== 0) return;
-      e.preventDefault(); // no native image drag
-      el.setPointerCapture(e.pointerId);
+    let sideways = false;
+    box.addEventListener("pointerdown", (e) => {
+      const target = e.target as Element;
+      // the bar's buttons and a recording's own controls keep their presses
+      if (e.button !== 0 || target.closest(".box-bar, video")) return;
+      if (target === image()) e.preventDefault(); // no native image drag
+      target.setPointerCapture(e.pointerId);
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (pointers.size === 1) {
-        pressed = { x: e.clientX, y: e.clientY };
+        pressed = { x: e.clientX, y: e.clientY, t: e.timeStamp };
         moved = false;
-      } else moved = true;
+      } else {
+        moved = true;
+        settle(); // a second finger turns a swipe into a pinch
+      }
     });
-    stage.addEventListener("pointermove", (e) => {
+    box.addEventListener("pointermove", (e) => {
       const el = image();
       const last = pointers.get(e.pointerId);
-      if (!el || !last) return;
+      if (!last) return;
       if (pointers.size === 1) {
-        if (!moved && Math.hypot(e.clientX - pressed.x, e.clientY - pressed.y) < 5) return;
-        moved = true;
+        const dx = e.clientX - pressed.x;
+        const dy = e.clientY - pressed.y;
+        if (!moved) {
+          if (Math.hypot(dx, dy) < 5) return;
+          moved = true;
+          sideways = Math.abs(dx) > Math.abs(dy);
+        }
         pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-        if (z.s === 1) return;
+        if (!el || z.s === 1) {
+          if (sideways && slides.length > 1) pull(dx);
+          return;
+        }
         el.classList.add("dragging");
         z.x += e.clientX - last.x;
         z.y += e.clientY - last.y;
         render(el, false);
         return;
       }
+      if (!el) return;
       // pinch: scale by the change in finger spread, about the midpoint, and follow it
       const [a, b] = [...pointers.values()];
       const mid = (p: typeof a, q: typeof a) => [(p.x + q.x) / 2, (p.y + q.y) / 2];
@@ -363,11 +424,12 @@ const single = stops.length < 2;
       zoomTo(el, (z.s * spread(c, d)) / before, nx, ny, false);
     });
     const lift = (e: PointerEvent) => {
-      pointers.delete(e.pointerId);
-      if (!pointers.size) image()?.classList.remove("dragging");
+      if (!pointers.delete(e.pointerId) || pointers.size) return;
+      image()?.classList.remove("dragging");
+      settle(e.type === "pointerup" ? e.timeStamp - pressed.t : undefined);
     };
-    stage.addEventListener("pointerup", lift);
-    stage.addEventListener("pointercancel", lift);
+    box.addEventListener("pointerup", lift);
+    box.addEventListener("pointercancel", lift);
     stage.addEventListener("click", (e) => {
       const el = image();
       if (!el || e.target !== el || moved) return;
@@ -385,12 +447,16 @@ const single = stops.length < 2;
       stage.querySelector(".full")?.remove();
     };
     const show = (i: number) => {
+      // reuse the previewed image: a trackpad's wheel events stay with the element under the
+      // cursor until it moves, so swapping it out would strand the next two-finger swipe
+      const previous = stage.querySelector<HTMLImageElement>("img.full");
       release();
       shown = i;
       const slide = slides[i];
       const media = slide.querySelector<HTMLImageElement | HTMLVideoElement>(".media")!;
-      const copy = document.createElement(media instanceof HTMLVideoElement ? "video" : "img");
+      const copy = media instanceof HTMLVideoElement ? document.createElement("video") : (previous ?? document.createElement("img"));
       copy.className = "full";
+      copy.removeAttribute("style");
       copy.src = media.dataset.full || media.currentSrc || media.src;
       if (copy instanceof HTMLVideoElement && media instanceof HTMLVideoElement) {
         // carry on from where the inline player was
@@ -432,7 +498,7 @@ const single = stops.length < 2;
       });
     };
     const inline = () => (shown >= 0 ? slides[shown].querySelector(".media") : null);
-    const full = () => stage.querySelector(".full");
+    const full = () => stage.querySelector<HTMLElement>(".full");
     const openBox = (i: number) =>
       morph(slides[i].querySelector(".media"), full, () => {
         show(i);
@@ -447,7 +513,11 @@ const single = stops.length < 2;
     };
     const step = (d: number) => {
       const i = shown + d;
-      if (i >= 0 && i < slides.length) show(i);
+      if (i < 0 || i >= slides.length) return false;
+      show(i);
+      // the new slide comes in from the side it's moving from
+      if (!reducedMotion()) full()?.animate([{ transform: `translateX(${d * 48}px)`, opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 200, easing: "ease-out" });
+      return true;
     };
     boxPrev?.addEventListener("click", () => step(-1));
     boxNext?.addEventListener("click", () => step(1));
@@ -470,9 +540,9 @@ const single = stops.length < 2;
       else return;
       e.preventDefault();
     });
-    // anything but the media and the buttons (backdrop, padding, caption) closes it
+    // anything but the media and the buttons (backdrop, padding, caption) closes it, unless it was a swipe
     box.addEventListener("click", (e) => {
-      if (!(e.target as Element).closest(".full, .box-bar")) closeBox();
+      if (!moved && !(e.target as Element).closest(".full, .box-bar")) closeBox();
     });
     slides.forEach((s, i) => s.querySelector("[data-zoom]")?.addEventListener("click", () => openBox(i)));
 
@@ -624,6 +694,8 @@ const single = stops.length < 2;
      would break the sticky sidebar/aside). The backdrop needs overflow: hidden to be a scroll
      container for overscroll-behavior to apply; Safari only contains scrolls that overflow */
   .lightbox:modal { overscroll-behavior: contain; }
+  /* swipes and pinches anywhere in it are ours, not the browser's */
+  .lightbox { touch-action: none; }
   .lightbox::backdrop {
     overflow: hidden;
     overscroll-behavior: contain;
@@ -636,7 +708,20 @@ const single = stops.length < 2;
   @starting-style { .lightbox[open]::backdrop { opacity: 0; } }
   /* above a zoomed image */
   .box-bar { position: fixed; z-index: 1; top: 12px; right: 12px; display: flex; align-items: center; gap: 8px; cursor: auto; }
-  .box-count { margin-right: 4px; color: #c4ccdb; }
+  /* one frosted toolbar in the theme's surface, so it reads over the dimmed page and over any shot */
+  .box-bar {
+    gap: 2px;
+    padding: 4px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    backdrop-filter: blur(12px) saturate(1.4);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.3);
+  }
+  .box-bar .icon-btn { border-color: transparent; background: none; color: var(--fg); }
+  @media (hover: hover) { .box-bar .icon-btn:hover { border-color: var(--line); background: var(--bg); color: var(--peri); } }
+  .box-bar .icon-btn:disabled { opacity: 0.5; border-color: transparent; background: none; color: var(--muted); }
+  .box-count { padding: 0 6px; color: var(--muted); }
   .stage { display: grid; justify-items: center; gap: 10px; min-height: 0; max-height: 100%; margin: 0; }
   .stage :global(.full) {
     display: block;
